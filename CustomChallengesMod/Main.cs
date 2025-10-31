@@ -7,13 +7,13 @@
         public override string Author => "Darthan";
         public override string MinimumGameVersionNecessary => "1.5.10.2";
         public override string ModVersion => "v1.0";
-        public override string Description => "Multiple launchpad support mod";
+        public override string Description => "Support for custom challenges for custom solar systems";
 
 //~         public System.Collections.Generic.Dictionary<string, SFS.IO.FilePath> UpdatableFiles =>
 //~             new System.Collections.Generic.Dictionary<string, SFS.IO.FilePath>()
 //~                 {
 //~                     {
-//~                         "https://github.com/Darthan184/Thrust-Assist-SFS1/releases/latest/CustomChallengesMod.dll"
+//~                         "https://github.com/Darthan184/Custom-Challenges-SFS1/releases/latest/CustomChallengesMod.dll"
 //~                         , new SFS.IO.FolderPath(ModFolder).ExtendToFile("CustomChallengesMod.dll")
 //~                     }
 //~                 };

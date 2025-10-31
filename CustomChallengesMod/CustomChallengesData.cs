@@ -1,12 +1,15 @@
 ﻿namespace CustomChallengesMod
 {
+    /// <summary>Data for one custom challenge stored in a JSON array in
+    /// C:\Program Files (x86)\Steam\steamapps\common\Spaceflight Simulator\Spaceflight Simulator Game\Spaceflight Simulator_Data\Custom Solar Systems\[[world name]]\Custom_Challenges.txt
+    /// </summary>
     [System.Serializable]
     public class CustomChallengesData
     {
         [System.Serializable]
         public class Step
         {
-            /// <summary>The name of the planet where this step is to be accomplished</summary>
+            /// <summary>The name of the planet where this step is to be accomplished, not used for stepType="Multi"</summary>
             public string planetName="";
 
             /// <summary>
@@ -23,7 +26,7 @@
 
             /// <summary>
             /// Only used for stepType="Multi", the list of steps that need to be accomplished in any order. In the pre-defined
-            /// challenges these stem all have type land - unclue if any other setp type could be used and, in ay case, the
+            /// challenges these steps all have type land - unclear if any other setp type could be used and, in any case, the
             /// implementation of this is buggy
             /// </summary>
             public Step[] steps = null;
@@ -39,12 +42,12 @@
             public int downrange=0;
 
             /// <summary>
-            /// Only used for stepType="Height". The mimimum altitude to be reached in km.
+            /// Only used for stepType="Height". The mimimum altitude to be reached in metres.
             /// </summary>
             public int height=0;
 
             /// <summary>
-            /// Only used for stepType "Height". If true, the velocity must ne at least 20m/s at this altitude. Is always false for the
+            /// Only used for stepType "Height". If true, the velocity must be at least 20m/s at this altitude. Is always false for the
             /// pre-defined challenges.
             /// </summary>
             public bool checkVelocity=false;
@@ -58,7 +61,7 @@
             /// Only used for stepType="Orbit". The type of orbit the needs to be reached. Possible values:
             /// not each condition is checked in the following order the first matching one is counted
             /// "None" - landed - no sure if this is usfull
-            /// "Esc" - apopapsis>SOI - could be used to detect a flyby?
+            /// "Esc" - apoapsis>SOI - could be used to detect a flyby?
             /// "Sub", - suborbital, periapsis below surface
             /// "High", - periapsis > 1.5 radius above surface
             /// "Trans", - apoapsis > 0.5 radius above surface
@@ -91,6 +94,9 @@
 
         /// <summary>The description to be used, N.B. not automatically translated (the in-game ones are translated)
         public string description="";
+
+        /// <summary>The name of the planet that is the 'owner' of this challenge</summary>
+        public string ownerName="";
 
         /// <summary>
         /// The difficulty indicator to be used (will be translated). Possible values:

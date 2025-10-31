@@ -5,187 +5,403 @@ namespace CustomChallengesMod
 {
     [HarmonyLib.HarmonyPatch(typeof(SFS.Logs.Challenge), "CollectChallenges")]
     class WorldBase_PlanetLoader
-//~     {
-//~         static void Prefix
-//~             (
-//~                 SFS.WorldBase.WorldSettings settings, SFS.I_MsgLogger log
-//~                 , System.Action<bool> callback
-//~                 , out System.Collections.Generic.List<MultiLaunchpadMod.SpaceCenterData> __state
-//~             )
-//~         {
-//~         }
+    {
+        private class _InternalException : System.Exception
+        {
+            public _InternalException(string message):base(message) {}
+        }
 
-        private class _InternalException : System.Exception;
+        private struct _ChallengeIntermediate
+        {
+            public int displayPriority;
+            public string id;
+            public SFS.WorldBase.Planet owner;
+            public UnityEngine.Sprite icon;
+            public System.Func<string> title;
+            public System.Func<string> description;
+            public SFS.Logs.Difficulty difficulty;
+            public bool returnSafely;
+            public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
+        }
 
         static void Postfix(ref System.Collections.Generic.List<SFS.Logs.Challenge> __result)
         {
-            SFS.WorldBase.SolarSystemReference solarSystem = settings.solarSystem;
-            System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData> custom_Challenges =
-                new  System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData>();
-
-            System.Collections.Generic.Dictionary<string, SFS.Logs.Challenge> challengesById;
-            if (UnityEngine.Application.isEditor)
+            System.Collections.Generic.List<SFS.Logs.ChallengeStep>
+                GetSteps(string systemName, string id, CustomChallengesMod.CustomChallengesData.Step[] inputSteps)
             {
-                ResourcesLoader.main = UnityEngine.Object.FindObjectOfType<ResourcesLoader>();
-            }
-            ResourcesLoader.ChallengeIcons challengeIcons = ResourcesLoader.main.challengeIcons;
+                System.Collections.Generic.List<SFS.Logs.ChallengeStep> outputSteps = new System.Collections.Generic.List<SFS.Logs.ChallengeStep>();
+                int stepCount = 1;
 
-            if (solarSystem.name.Length > 0)
-            {
-                SFS.IO.FilePath filePath = FileLocations.SolarSystemsFolder.Extend(solarSystem.name).ExtendToFile("Custom_Challenges.txt");
-
-                if
-                    (
-                        filePath.FileExists()
-                        && !SFS.Parsers.Json.JsonWrapper.TryLoadJson
-                            <System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData>>
-                                (filePath, out custom_Challenges)
-                    )
+                foreach (CustomChallengesMod.CustomChallengesData.Step oneInputStep in inputSteps)
                 {
-                    UnityEngine.Debug.Log
-                        (
-                            string.Format
-                                ("CustomChallengesMod: Solar system \"{0}\" has an invalid Custom_Challenges.txt file", solarSystem.name)
-                        );
-                    return __result;
-                }
-            }
+                    SFS.WorldBase.Planet planet=null;
+                    string stepID = string.Format("{0}/{1:D}", id, stepCount++);
 
-            // populate dictionary for existing challenges
-            foreach (SFS.Logs.Challenge oneChallenge in  __result) challengesById[oneChallenge.id]=oneChallenge;
+                    if (oneInputStep.stepType.ToLower().Trim() != "multi")
+                    {
+                        if (oneInputStep.planetName.Trim()=="")
+                        {
+                            throw new _InternalException
+                            (
+                                string.Format
+                                    (
+                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing planetName field"
+                                        , systemName
+                                        , stepID
+                                    )
+                            );
+                        }
 
-            // copy the list as read into a dictionary, ignoring unknown planets
-            foreach (CustomChallengesMod.CustomChallengesData oneNewChallengeData in custom_Challenges)
-            {
-                #################### this wont work, there is no default constructor, need vars for each field and create the object from the vars
-                SFS.Logs.Challenge oneNewChallenge = new SFS.Logs.Challenge();
+                        if (!SFS.Base.planetLoader.planets.ContainsKey(oneInputStep.planetName.Trim()))
+                        {
+                            throw new _InternalException
+                            (
+                                string.Format
+                                    (
+                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an planetName field referring to a non-existent planet \"{1}\""
+                                        ,systemName
+                                        , stepID
+                                        ,oneInputStep.planetName.Trim()
+                                    )
+                            );
+                        }
+                        planet=SFS.Base.planetLoader.planets[oneInputStep.planetName.Trim()];
+                    }
 
-                try
-                {
-                    bool hasData = true;
-
-                    if (oneNewChallengeData.id.trim()="")
+                    if (oneInputStep.stepType.Trim()=="")
                     {
                         throw new _InternalException
                         (
                             string.Format
-                                ("CustomChallengesMod: Solar system \"{0}\" Custom_Challenges.txt file has a missing id field", solarSystem.name)
+                                (
+                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing stepType field"
+                                    , systemName
+                                    , stepID
+                                )
                         );
                     }
-                    oneNewChallenge.id=oneNewChallengeData.id.trim();
 
-                    switch (oneNewChallengeData.icon.toLower().trim())
+                    switch(oneInputStep.stepType.ToLower().Trim())
                     {
-                        case "":hasData=false;break
-                        case "firstflight":oneNewChallenge.icon=challengeIcons.firstFlight;break;
-                        case "10km":oneNewChallenge.icon=challengeIcons.Icon_10Km;break;
-                        case "30km":oneNewChallenge.icon=challengeIcons.Icon_30Km;break;
-                        case "50km":oneNewChallenge.icon=challengeIcons.Icon_50Km;break;
-                        case "downrange":oneNewChallenge.icon=challengeIcons.Icon_Downrange;break;
-                        case "reach_orbit":oneNewChallenge.icon=challengeIcons.Icon_Reach_Orbit;break;
-                        case "orbit_high":oneNewChallenge.icon=challengeIcons.Icon_Orbit_High;break;
-                        case "capture":oneNewChallenge.icon=challengeIcons.Icon_Capture;break;
-                        case "tour":oneNewChallenge.icon=challengeIcons.Icon_Tour;break;
-                        case "crash":oneNewChallenge.icon=challengeIcons.Icon_Crash;break;
-                        case "unmannedlanding":oneNewChallenge.icon=challengeIcons.Icon_UnmannedLanding;break;
-                        case "mannedlanding":oneNewChallenge.icon=challengeIcons.Icon_MannedLanding;break;
-                        default:
-                            throw new _InternalException
-                                (
-                                    string.Format
-                                        (
-                                            "CustomChallengesMod: Solar system \"{0}\" Custom_Challenges.txt id:{1} file has an invalid icon field: \"{2}\""
-                                            ,solarSystem.name
-                                            ,oneNewChallenge.id
-                                            ,oneNewChallengeData.icon
-                                        )
-                                );
+                        case "multi":
+                        {
+                            SFS.Logs.MultiStep oneOutputStep = new SFS.Logs.MultiStep();
+                            oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps);
+                            outputSteps.Add(oneOutputStep);
+                        }
                         break;
-                    }
 
-                    if (hasData)
-                    {
-                        oneNewChallenge.displayPriority=(100*oneNewChallengeData.priority - challengesById.Count);
-
-                        if (oneNewChallengeData.title.trim()="")
+                        case "any_landmarks":
                         {
-                            throw new _InternalException
-                                (
-                                    string.Format
-                                        (
-                                            "CustomChallengesMod: Solar system \"{0}\" Custom_Challenges.txt id:{1} file has a missing title field"
-                                            ,solarSystem.name
-                                            ,oneNewChallenge.id
-                                        )
-                                );
+                            SFS.Logs.Step_Any_Landmarks oneOutputStep = new SFS.Logs.Step_Any_Landmarks();
+                            oneOutputStep.planet=planet;
+                            oneOutputStep.count=oneInputStep.count;
+                            outputSteps.Add(oneOutputStep);
                         }
+                        break;
 
-                        string title=oneNewChallengeData.title;
-                        oneNewChallenge.title=new System.Func<string>(() => title);
-
-                        if (oneNewChallengeData.description.trim()="")
+                        case "downrange":
                         {
-                            throw new _InternalException
-                                (
-                                    string.Format
-                                        (
-                                            "CustomChallengesMod: Solar system \"{0}\" Custom_Challenges.txt id:{1} file has a missing description field"
-                                            ,solarSystem.name
-                                            ,oneNewChallenge.id
-                                        )
-                                );
+                            SFS.Logs.Step_Downrange oneOutputStep = new SFS.Logs.Step_Downrange();
+                            oneOutputStep.planet=planet;
+                            oneOutputStep.downrange=oneInputStep.downrange;
+                            outputSteps.Add(oneOutputStep);
                         }
+                        break;
 
-                        string description=oneNewChallengeData.description;
-                        oneNewChallenge.description=new System.Func<string>(() => description);
-
-                        switch (oneNewChallengeData.difficulty.toLower().trim())
+                        case "height":
                         {
-                            case "easy":oneNewChallenge.difficulty=SFS.Logs.Difficulty.Easy;break;
-                            case "medium":oneNewChallenge.difficulty=SFS.Logs.Difficulty.Medium;break;
-                            case "hard":oneNewChallenge.difficulty=SFS.Logs.Difficulty.Hard;break;
-                            case "extreme":oneNewChallenge.difficulty=SFS.Logs.Difficulty.Extreme;break;
-                            default:
-                                throw new _InternalException
+                            SFS.Logs.Step_Height oneOutputStep = new SFS.Logs.Step_Height();
+                            oneOutputStep.planet=planet;
+                            oneOutputStep.height=oneInputStep.height;
+                            oneOutputStep.checkVelocity=oneInputStep.checkVelocity;
+                            outputSteps.Add(oneOutputStep);
+                        }
+                        break;
+
+                        case "impact":
+                        {
+                            SFS.Logs.Step_Impact oneOutputStep = new SFS.Logs.Step_Impact();
+                            oneOutputStep.planet=planet;
+                            oneOutputStep.impactVelocity=oneInputStep.impactVelocity;
+                            outputSteps.Add(oneOutputStep);
+                        }
+                        break;
+
+                        case "land":
+                        {
+                            SFS.Logs.Step_Land oneOutputStep = new SFS.Logs.Step_Land();
+                            oneOutputStep.planet=planet;
+                            outputSteps.Add(oneOutputStep);
+                        }
+                        break;
+
+                        case "orbit":
+                        {
+                            SFS.Logs.Step_Orbit oneOutputStep = new SFS.Logs.Step_Orbit();
+                            oneOutputStep.planet=planet;
+
+                            switch(oneInputStep.orbitType.ToLower().Trim())
+                            {
+                                case "none": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None ; break;
+                                case "esc": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Esc ; break;
+                                case "sub": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Sub ; break;
+                                case "high": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.High ; break;
+                                case "trans": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Trans ; break;
+                                case "low": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Low ; break;
+                                default:
+                                {
+                                    throw new _InternalException
                                     (
                                         string.Format
                                             (
-                                                "CustomChallengesMod: Solar system \"{0}\" Custom_Challenges.txt id:{1} file has an invalid difficulty field: \"{2}\""
-                                                ,solarSystem.name
-                                                ,oneNewChallenge.id
-                                                ,oneNewChallengeData.difficulty
+                                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid orbitType field: \"{2}\""
+                                                ,systemName
+                                                ,stepID
+                                                ,oneInputStep.orbitType
                                             )
                                     );
-                            break;
+                                }
+                            }
+                            outputSteps.Add(oneOutputStep);
                         }
+                        break;
 
-                        #################### load the steps, may need a recursive method to support MultiStep
-
-                    }
-
-                    if (hasData)
-                    {
-                        challengesById[oneNewChallenge.id]=oneNewChallenge;
-                    }
-                    else if (challengesById.ContainsKey(oneNewChallenge.id))
-                    {
-                        challengesById.Remove(oneNewChallenge.id);
+                        default:
+                        {
+                            throw new _InternalException
+                            (
+                                string.Format
+                                    (
+                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid stepType field: \"{2}\""
+                                        , systemName
+                                        , stepID
+                                        ,oneInputStep.stepType
+                                    )
+                            );
+                        }
                     }
                 }
-                catch (_InternalException excp)
-                {
-                    UnityEngine.Debug.Log(excp.Message);
-                    return _result;
-                }
-                catch (System.Exception excp)
-                {
-                    UnityEngine.Debug.Log(excp.ToString());
-                    return _result;
-                }
+                return outputSteps;
             }
-            __result.Clear();
-            foreach (SFS.Logs.Challenge oneChallenge in  challengesById.Values) __result.Add(oneChallenge)
-            __result.Sort((SFS.Logs.Challenge a, SFS.Logs.Challenge b) => b.displayPriority.CompareTo(a.displayPriority));
+
+            string traceID="T-01";
+
+            try
+            {
+                SFS.WorldBase.SolarSystemReference solarSystem =  SFS.Base.worldBase.settings.solarSystem;
+                System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData> custom_Challenges =
+                    new  System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData>();
+
+                System.Collections.Generic.Dictionary<string, SFS.Logs.Challenge> challengesById = new  System.Collections.Generic.Dictionary<string, SFS.Logs.Challenge>();
+                if (UnityEngine.Application.isEditor)
+                {
+                    ResourcesLoader.main = UnityEngine.Object.FindObjectOfType<ResourcesLoader>();
+                }
+                ResourcesLoader.ChallengeIcons challengeIcons = ResourcesLoader.main.challengeIcons;
+
+                if (solarSystem.name.Length > 0)
+                {
+                    SFS.IO.FilePath filePath = FileLocations.SolarSystemsFolder.Extend(solarSystem.name).ExtendToFile("Custom_Challenges.txt");
+
+                    if
+                        (
+                            filePath.FileExists()
+                            && !SFS.Parsers.Json.JsonWrapper.TryLoadJson
+                                <System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData>>
+                                    (filePath, out custom_Challenges)
+                        )
+                    {
+                        UnityEngine.Debug.LogErrorFormat
+                            ("[CustomChallengesMod.CollectChallenges.Postfix] Solar system \"{0}\" has an invalid Custom_Challenges.txt file", solarSystem.name);
+                        return;
+                    }
+                }
+
+                traceID="T-02";
+
+                // populate dictionary for existing challenges
+                foreach (SFS.Logs.Challenge oneChallenge in  __result) challengesById[oneChallenge.id]=oneChallenge;
+
+                traceID="T-03";
+
+                if (custom_Challenges!=null)
+                {
+                    // copy the list as read into a dictionary, ignoring invalid items
+                    foreach (CustomChallengesMod.CustomChallengesData oneInputChallenge in custom_Challenges)
+                    {
+                        _ChallengeIntermediate oneOutputChallenge=new _ChallengeIntermediate();
+
+                        try
+                        {
+                            bool hasData = true;
+
+                            if (oneInputChallenge.id.Trim()=="")
+                            {
+                                throw new _InternalException
+                                (
+                                    string.Format
+                                        ("Solar system \"{0}\" Custom_Challenges.txt file has a missing id field", solarSystem.name)
+                                );
+                            }
+                            oneOutputChallenge.id=oneInputChallenge.id.Trim();
+
+                            switch (oneInputChallenge.icon.ToLower().Trim())
+                            {
+                                case "":hasData=false;break;
+                                case "firstflight":oneOutputChallenge.icon=challengeIcons.firstFlight;break;
+                                case "10km":oneOutputChallenge.icon=challengeIcons.icon_10Km;break;
+                                case "30km":oneOutputChallenge.icon=challengeIcons.icon_30Km;break;
+                                case "50km":oneOutputChallenge.icon=challengeIcons.icon_50Km;break;
+                                case "downrange":oneOutputChallenge.icon=challengeIcons.icon_Downrange;break;
+                                case "reach_orbit":oneOutputChallenge.icon=challengeIcons.icon_Reach_Orbit;break;
+                                case "orbit_high":oneOutputChallenge.icon=challengeIcons.icon_Orbit_High;break;
+                                case "capture":oneOutputChallenge.icon=challengeIcons.icon_Capture;break;
+                                case "tour":oneOutputChallenge.icon=challengeIcons.icon_Tour;break;
+                                case "crash":oneOutputChallenge.icon=challengeIcons.icon_Crash;break;
+                                case "unmannedlanding":oneOutputChallenge.icon=challengeIcons.icon_UnmannedLanding;break;
+                                case "mannedlanding":oneOutputChallenge.icon=challengeIcons.icon_MannedLanding;break;
+                                default:
+                                    throw new _InternalException
+                                        (
+                                            string.Format
+                                                (
+                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid icon field: \"{2}\""
+                                                    ,solarSystem.name
+                                                    ,oneOutputChallenge.id
+                                                    ,oneInputChallenge.icon
+                                                )
+                                        );
+                            }
+
+                            if (hasData)
+                            {
+                                if (oneInputChallenge.ownerName.Trim()=="")
+                                {
+                                    throw new _InternalException
+                                    (
+                                        string.Format
+                                            (
+                                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing ownerName field"
+                                                ,oneOutputChallenge.id
+                                                , solarSystem.name
+                                            )
+                                    );
+                                }
+
+                                if (!SFS.Base.planetLoader.planets.ContainsKey(oneInputChallenge.ownerName.Trim()))
+                                {
+                                    throw new _InternalException
+                                    (
+                                        string.Format
+                                            (
+                                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an ownerName field referring to a non-existent planet \"{1}\""
+                                                ,solarSystem.name
+                                                ,oneOutputChallenge.id
+                                                ,oneInputChallenge.ownerName.Trim()
+                                            )
+                                    );
+                                }
+                                oneOutputChallenge.owner=SFS.Base.planetLoader.planets[oneInputChallenge.ownerName.Trim()];
+
+                                oneOutputChallenge.displayPriority=(100*oneInputChallenge.priority - challengesById.Count);
+
+                                if (oneInputChallenge.title.Trim()=="")
+                                {
+                                    throw new _InternalException
+                                        (
+                                            string.Format
+                                                (
+                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing title field"
+                                                    ,solarSystem.name
+                                                    ,oneOutputChallenge.id
+                                                )
+                                        );
+                                }
+
+                                string title=oneInputChallenge.title;
+                                oneOutputChallenge.title=new System.Func<string>(() => title);
+
+                                if (oneInputChallenge.description.Trim()=="")
+                                {
+                                    throw new _InternalException
+                                        (
+                                            string.Format
+                                                (
+                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1}  has a missing description field"
+                                                    ,solarSystem.name
+                                                    ,oneOutputChallenge.id
+                                                )
+                                        );
+                                }
+
+                                string description=oneInputChallenge.description;
+                                oneOutputChallenge.description=new System.Func<string>(() => description);
+
+                                switch (oneInputChallenge.difficulty.ToLower().Trim())
+                                {
+                                    case "easy":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Easy;break;
+                                    case "medium":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Medium;break;
+                                    case "hard":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Hard;break;
+                                    case "extreme":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Extreme;break;
+                                    default:
+                                        throw new _InternalException
+                                            (
+                                                string.Format
+                                                    (
+                                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid difficulty field: \"{2}\""
+                                                        ,solarSystem.name
+                                                        ,oneOutputChallenge.id
+                                                        ,oneInputChallenge.difficulty
+                                                    )
+                                            );
+                                }
+
+                                oneOutputChallenge.returnSafely = oneInputChallenge.returnSafely;
+                                oneOutputChallenge.steps = GetSteps(solarSystem.name,oneOutputChallenge.id,oneInputChallenge.steps);
+                            }
+
+                            if (hasData)
+                            {
+                                challengesById[oneOutputChallenge.id]=new SFS.Logs.Challenge
+                                    (
+                                        oneOutputChallenge.displayPriority
+                                        ,oneOutputChallenge.id
+                                        ,oneOutputChallenge.owner
+                                        ,oneOutputChallenge.icon
+                                        ,oneOutputChallenge.title
+                                        ,oneOutputChallenge.description
+                                        ,oneOutputChallenge.difficulty
+                                        ,oneOutputChallenge.returnSafely
+                                        ,oneOutputChallenge.steps
+                                    );
+                            }
+                            else if (challengesById.ContainsKey(oneOutputChallenge.id))
+                            {
+                                challengesById.Remove(oneOutputChallenge.id);
+                            }
+                        }
+                        catch (_InternalException excp)
+                        {
+                            UnityEngine.Debug.LogErrorFormat("[CustomChallengesMod.CollectChallenges.Postfix] {0}",excp.ToString());
+                        }
+                    }
+                }
+                traceID="T-04";
+                __result.Clear();
+                traceID="T-05";
+                foreach (SFS.Logs.Challenge oneChallenge in  challengesById.Values)
+                {
+                    __result.Add(oneChallenge);
+                }
+                traceID="T-06";
+                __result.Sort((SFS.Logs.Challenge a, SFS.Logs.Challenge b) => b.displayPriority.CompareTo(a.displayPriority));
+            }
+            catch (System.Exception excp)
+            {
+                UnityEngine.Debug.LogErrorFormat("[CustomChallengesMod.CollectChallenges.Postfix-{0}] {1}",traceID,excp.ToString());
+                return;
+            }
         }
     }
 }
