@@ -25,9 +25,7 @@
             public string stepType="";
 
             /// <summary>
-            /// Only used for stepType="Multi", the list of steps that need to be accomplished in any order. In the pre-defined
-            /// challenges these steps all have type land - unclear if any other setp type could be used and, in any case, the
-            /// implementation of this is buggy
+            /// Only used for stepType="Multi", the list of steps that need to be accomplished in any order.
             /// </summary>
             public Step[] steps = null;
 
@@ -42,7 +40,7 @@
             public int downrange=0;
 
             /// <summary>
-            /// Only used for stepType="Height". The mimimum altitude to be reached in metres.
+            /// Only used for stepType="Height". The minimum altitude to be reached in metres.
             /// </summary>
             public int height=0;
 
@@ -56,6 +54,16 @@
             /// Only used for stepType="Impact". The mimimum velocity at impact in m/s.
             /// </summary>
             public int impactVelocity=0;
+
+            /// <summary>
+            /// Used for stepType="Height","Land","Orbit". The minimum rocket mass in tonnes.
+            /// </summary>
+            public double minMass=0;
+
+            /// <summary>
+            /// Used for stepType="Height","Land","Orbit". The maximum rocket mass in tonnes.
+            /// </summary>
+            public double maxMass=0;
 
             /// <summary>
             /// Only used for stepType="Orbit". The type of orbit the needs to be reached. Possible values:

@@ -111,13 +111,25 @@ namespace CustomChallengesMod
                         break;
 
                         case "height":
-                        {
-                            SFS.Logs.Step_Height oneOutputStep = new SFS.Logs.Step_Height();
-                            oneOutputStep.planet=planet;
-                            oneOutputStep.height=oneInputStep.height;
-                            oneOutputStep.checkVelocity=oneInputStep.checkVelocity;
-                            outputSteps.Add(oneOutputStep);
-                        }
+                            if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0)
+                            {
+                                CustomChallengesMod.CustomSteps.Step_HeightPlus oneOutputStep =
+                                    new CustomChallengesMod.CustomSteps.Step_HeightPlus();
+                                oneOutputStep.planet=planet;
+                                oneOutputStep.minMass=oneInputStep.minMass;
+                                oneOutputStep.maxMass=oneInputStep.maxMass;
+                                oneOutputStep.height=oneInputStep.height;
+                                oneOutputStep.checkVelocity=oneInputStep.checkVelocity;
+                                outputSteps.Add(oneOutputStep);
+                            }
+                            else
+                            {
+                                SFS.Logs.Step_Height oneOutputStep = new SFS.Logs.Step_Height();
+                                oneOutputStep.planet=planet;
+                                oneOutputStep.height=oneInputStep.height;
+                                oneOutputStep.checkVelocity=oneInputStep.checkVelocity;
+                                outputSteps.Add(oneOutputStep);
+                            }
                         break;
 
                         case "impact":
@@ -130,26 +142,35 @@ namespace CustomChallengesMod
                         break;
 
                         case "land":
-                        {
-                            SFS.Logs.Step_Land oneOutputStep = new SFS.Logs.Step_Land();
-                            oneOutputStep.planet=planet;
-                            outputSteps.Add(oneOutputStep);
-                        }
+                            if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0)
+                            {
+                                CustomChallengesMod.CustomSteps.Step_LandPlus oneOutputStep =
+                                    new  CustomChallengesMod.CustomSteps.Step_LandPlus();
+                                oneOutputStep.planet=planet;
+                                oneOutputStep.minMass=oneInputStep.minMass;
+                                oneOutputStep.maxMass=oneInputStep.maxMass;
+                                outputSteps.Add(oneOutputStep);
+                            }
+                            else
+                            {
+                                SFS.Logs.Step_Land oneOutputStep = new SFS.Logs.Step_Land();
+                                oneOutputStep.planet=planet;
+                                outputSteps.Add(oneOutputStep);
+                            }
                         break;
 
                         case "orbit":
                         {
-                            SFS.Logs.Step_Orbit oneOutputStep = new SFS.Logs.Step_Orbit();
-                            oneOutputStep.planet=planet;
+                            SFS.Stats.StatsRecorder.Tracker.State_Orbit outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None;
 
                             switch(oneInputStep.orbitType.ToLower().Trim())
                             {
-                                case "none": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None ; break;
-                                case "esc": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Esc ; break;
-                                case "sub": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Sub ; break;
-                                case "high": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.High ; break;
-                                case "trans": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Trans ; break;
-                                case "low": oneOutputStep.orbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Low ; break;
+                                case "none": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None ; break;
+                                case "esc": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Esc ; break;
+                                case "sub": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Sub ; break;
+                                case "high": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.High ; break;
+                                case "trans": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Trans ; break;
+                                case "low": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Low ; break;
                                 default:
                                 {
                                     throw new _InternalException
@@ -164,7 +185,24 @@ namespace CustomChallengesMod
                                     );
                                 }
                             }
-                            outputSteps.Add(oneOutputStep);
+
+                            if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0)
+                            {
+                                CustomChallengesMod.CustomSteps.Step_OrbitPlus oneOutputStep
+                                    = new CustomChallengesMod.CustomSteps.Step_OrbitPlus();
+                                oneOutputStep.planet=planet;
+                                oneOutputStep.orbit=outputOrbit;
+                                oneOutputStep.minMass=oneInputStep.minMass;
+                                oneOutputStep.maxMass=oneInputStep.maxMass;
+                                outputSteps.Add(oneOutputStep);
+                            }
+                            else
+                            {
+                                SFS.Logs.Step_Orbit oneOutputStep = new SFS.Logs.Step_Orbit();
+                                oneOutputStep.planet=planet;
+                                oneOutputStep.orbit=outputOrbit;
+                                outputSteps.Add(oneOutputStep);
+                            }
                         }
                         break;
 
