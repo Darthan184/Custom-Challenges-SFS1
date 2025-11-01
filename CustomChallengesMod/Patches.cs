@@ -1,5 +1,6 @@
 using System.Linq; // contains extensions
 using HarmonyLib; // contains extensions
+using UnityEngine; // contains extensions
 
 namespace CustomChallengesMod
 {
@@ -185,6 +186,40 @@ namespace CustomChallengesMod
                 return outputSteps;
             }
 
+            // Load a PNG or JPG image from disk to a UnityEngine.Texture2D, assign this texture to a new sprite and return its reference
+            UnityEngine.Sprite LoadNewSprite(string FilePath, float pixelsPerUnit = 100.0f)
+            {
+                UnityEngine.Texture2D spriteTexture = LoadTexture(FilePath);
+                if (spriteTexture==null)
+                {
+                    return null;
+                }
+                else
+                {
+                    return UnityEngine.Sprite.Create(spriteTexture, new UnityEngine.Rect(0, 0, spriteTexture.width, spriteTexture.height),new UnityEngine.Vector2(0,0), pixelsPerUnit);
+                }
+            }
+
+            // Load a PNG or JPG file from disk to a UnityEngine.Texture2D
+            // Returns null if load fails
+            UnityEngine.Texture2D LoadTexture(string filePath)
+            {
+                UnityEngine.Texture2D tex2D;
+                byte[] fileData;
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    fileData = System.IO.File.ReadAllBytes(filePath);
+
+                    // Create new "empty" texture
+                    tex2D = new UnityEngine.Texture2D(2, 2);
+
+                    // Load the imagedata into the texture (size is set automatically)
+                    if (tex2D.LoadImage(fileData)) return tex2D;
+                }
+                return null;
+            }
+
             string traceID="T-01";
 
             try
@@ -246,7 +281,9 @@ namespace CustomChallengesMod
                             }
                             oneOutputChallenge.id=oneInputChallenge.id.Trim();
 
-                            switch (oneInputChallenge.icon.ToLower().Trim())
+                            string icon= oneInputChallenge.icon.ToLower().Trim();
+
+                            switch (icon)
                             {
                                 case "":hasData=false;break;
                                 case "firstflight":oneOutputChallenge.icon=challengeIcons.firstFlight;break;
@@ -262,16 +299,43 @@ namespace CustomChallengesMod
                                 case "unmannedlanding":oneOutputChallenge.icon=challengeIcons.icon_UnmannedLanding;break;
                                 case "mannedlanding":oneOutputChallenge.icon=challengeIcons.icon_MannedLanding;break;
                                 default:
-                                    throw new _InternalException
-                                        (
+                                {
+                                    if (icon.EndsWith(".png"))
+                                    {
+                                        UnityEngine.Sprite sprite=LoadNewSprite
+                                            (
+                                                FileLocations.SolarSystemsFolder.Extend(solarSystem.name)
+                                                    .ExtendToFile("Custom_Challenge_Icons/" + icon)
+                                            );
+
+                                        if (sprite==null)
+                                        {
                                             string.Format
                                                 (
-                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid icon field: \"{2}\""
+                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} cannot find icon file: \"{2}\""
                                                     ,solarSystem.name
                                                     ,oneOutputChallenge.id
-                                                    ,oneInputChallenge.icon
-                                                )
-                                        );
+                                                    ,"Custom_Challenge_Icons/" + icon
+                                                );
+                                        }
+
+                                        oneOutputChallenge.icon=sprite;
+                                    }
+                                    else
+                                    {
+                                        throw new _InternalException
+                                            (
+                                                string.Format
+                                                    (
+                                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid icon field: \"{2}\""
+                                                        ,solarSystem.name
+                                                        ,oneOutputChallenge.id
+                                                        ,oneInputChallenge.icon
+                                                    )
+                                            );
+                                    }
+                                }
+                                break;
                             }
 
                             if (hasData)

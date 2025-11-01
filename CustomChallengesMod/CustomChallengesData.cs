@@ -78,7 +78,8 @@
 
         /// <summary>
         /// indicates which of the icons should be used, omit or leave blank to indicate that an existing challenges should be
-        /// deleted. Possible values:
+        /// deleted. If suffixed with '.png' will load a file from Custom_Challenge_Icons/ . Otherwise a standard SFS Icon will be
+        /// used, one of:
         /// "firstFlight", "10Km", "30Km", "50Km", "Downrange", "Reach_Orbit", "Orbit_High", "Capture", "Tour", "Crash",
         /// "UnmannedLanding", "MannedLanding"
         ///</summary>
