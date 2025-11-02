@@ -2,6 +2,12 @@
 {
     /// <summary>Data for one custom challenge stored in a JSON array in
     /// C:\Program Files (x86)\Steam\steamapps\common\Spaceflight Simulator\Spaceflight Simulator Game\Spaceflight Simulator_Data\Custom Solar Systems\[[world name]]\Custom_Challenges.txt
+    /// for downrange/height/periapsis/apoapsis/sma values, if the last character is a digit it is altitude in meters, otherwise it should be one of:
+    /// "k" - for km altitude or distance
+    /// "m" - for Mm altitude or distance
+    /// "g" - for Gm altitude or distance
+    /// "r" - for planetary radius altitude or distance
+    /// "s" - SOI multiple distance from center (values should be <1) - not useful for distance
     /// </summary>
     [System.Serializable]
     public class CustomChallengesData
@@ -17,10 +23,11 @@
             /// "Multi" - multiple steps in any order (buggy)
             /// "Any_Landmarks" - a numbe of landmarks in ay order (buggy)
             /// "Downrange" - used if landed a minimum distance from the current(?) launch pad . Effect on planets without a current launchpad is unclear.
-            /// "Height" - used for minimum altitude reached.
+            /// "Height" - used for altitude reached.
             /// "Impact" - impact at a minumum velocity, unclear how this works
             /// "Land" - land on this planet
-            /// "Orbit" - orbit this planet
+            /// "Orbit" - orbit this planet using SFS orbit classifications
+            /// "CustomOrbit" - orbit this planet with the specified orbital parameters
             /// </summary>
             public string stepType="";
 
@@ -35,20 +42,19 @@
             public int count=0;
 
             /// <summary>
-            /// Only used for stepType="Downrange" .the mimimum distance from the launch site in metres
+            /// Only used for stepType="Downrange", the mimimum distance from the launch site
             /// </summary>
-            public int downrange=0;
+            public string downrange="";
 
             /// <summary>
-            /// Only used for stepType="Height". The minimum altitude to be reached in metres.
+            /// Only used for stepType="Height". The minimum altitude to be reached
             /// </summary>
-            public int height=0;
+            public string minHeight="";
 
             /// <summary>
-            /// Only used for stepType "Height". If true, the velocity must be at least 20m/s at this altitude. Is always false for the
-            /// pre-defined challenges.
+            /// Only used for stepType="Height". The minimum altitude to be reached
             /// </summary>
-            public bool checkVelocity=false;
+            public string maxHeight="";
 
             /// <summary>
             /// Only used for stepType="Impact". The mimimum velocity at impact in m/s.
@@ -58,12 +64,12 @@
             /// <summary>
             /// Used for stepType="Height","Land","Orbit". The minimum rocket mass in tonnes.
             /// </summary>
-            public double minMass=0;
+            public double minMass=double.NaN;
 
             /// <summary>
             /// Used for stepType="Height","Land","Orbit". The maximum rocket mass in tonnes.
             /// </summary>
-            public double maxMass=0;
+            public double maxMass=double.NaN;
 
             /// <summary>
             /// Only used for stepType="Orbit". The type of orbit the needs to be reached. Possible values:
@@ -76,6 +82,31 @@
             /// "Low",  - anything else
             /// </summary>
             public string orbitType="";
+
+            /// <summary>Only used for stepType="CustomOrbit".The maximum apoapsis</summary>
+            public string maxApoapsis="";
+
+            /// <summary>Only used for stepType="CustomOrbit".The maximum eccentricity</summary>
+            public double maxEcc=double.NaN;
+
+            /// <summary>Only used for stepType="CustomOrbit".The maximum periapsis</summary>
+            public string maxPeriapsis="";
+
+            /// <summary>Only used for stepType="CustomOrbit".The maximum semi-major axis</summary>
+            public string maxSma="";
+
+            /// <summary>Only used for stepType="CustomOrbit".The minimum apoapsis</summary>
+            public string minApoapsis="";
+
+            /// <summary>Only used for stepType="CustomOrbit".The minimum eccentricity</summary>
+            public double minEcc=double.NaN;
+
+            /// <summary>Only used for stepType="CustomOrbit".The minimum periapsis</summary>
+            public string minPeriapsis="";
+
+            /// <summary>Only used for stepType="CustomOrbit".The minimum semi-major axis</summary>
+            public string minSma="";
+
         }
 
         /// <summary>
@@ -89,7 +120,7 @@
         /// deleted. If suffixed with '.png' will load a file from Custom_Challenge_Icons/ . Otherwise a standard SFS Icon will be
         /// used, one of:
         /// "firstFlight", "10Km", "30Km", "50Km", "Downrange", "Reach_Orbit", "Orbit_High", "Capture", "Tour", "Crash",
-        /// "UnmannedLanding", "MannedLanding"
+        /// "Land_One_Way", "Land_Return"
         ///</summary>
         public string icon = "";
 
