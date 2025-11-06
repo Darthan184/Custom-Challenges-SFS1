@@ -3,7 +3,7 @@ The mod adds support for custom challenges to custom solar systems. N.B the chal
 
 To specify custom challenges you need to add a Custom_Challenges.txt file and possibly a Custom_Challenge_Icons directory if you want to add your own challenge icons:
 
-![File Directory](Images/Directory.png)
+![File Directory](images/directory.png)
 
 The file is a JSON array of challenge definitions each of which also contains a JSON array of steps of various types to be completed in the specified order. The is also a special step type - "Multi" - that contains an array of steps that may be completed in any order.
 
