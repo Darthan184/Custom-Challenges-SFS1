@@ -36,11 +36,19 @@ namespace CustomChallengesMod
             {
                 switch (value.Substring(value.Length-1).ToLower())
                 {
-                    case "k": return double.Parse(value.Substring(0,value.Length-1))*1000;
-                    case "m": return double.Parse(value.Substring(0,value.Length-1))*1000000;
-                    case "g": return double.Parse(value.Substring(0,value.Length-1))*1000000000;
+                    case "k": return double.Parse(value.Substring(0,value.Length-1))*1e3;
+                    case "m": return double.Parse(value.Substring(0,value.Length-1))*1e6;
+                    case "g": return double.Parse(value.Substring(0,value.Length-1))*1e9;
+                    case "t": return double.Parse(value.Substring(0,value.Length-1))*1e12;
+                    case "l": return double.Parse(value.Substring(0,value.Length-1))*86400.0*365.2425*299762458.0;
                     case "r": return double.Parse(value.Substring(0,value.Length-1))*planet.Radius;
                     case "s": return double.Parse(value.Substring(0,value.Length-1))*planet.SOI-planet.Radius;
+                    case "a": return double.Parse(value.Substring(0,value.Length-1))
+                        * System.Math.Max
+                            (
+                                planet.AtmosphereHeightPhysics
+                                ,System.Math.Max(planet.maxTerrainHeight,planet.data.basics.timewarpHeight)
+                            );
                     default: return double.Parse(value);
                 }
             }
@@ -59,6 +67,96 @@ namespace CustomChallengesMod
                 );
             }
        }
+
+        /// <summary>Expand distance values within the supplied string</summary>
+        private static string ExpandDistances(SFS.WorldBase.Planet planet,string systemName, string stepID, string fieldName,string value)
+        {
+            string input =value;
+            System.Text.StringBuilder output = new System.Text.StringBuilder();
+
+            while(input.Length>0)
+            {
+                int start = input.IndexOf("[[");
+                int end = 0;
+                string[] distanceInputSplit = {};
+                double distance;
+
+                if (start<0)
+                {
+                    output.Append(input);
+                    break;
+                }
+
+                output.Append(input.Substring(0,start)); // everything left of "[["
+                input=input.Substring(start+2); // everything right of "[["
+
+                end = input.IndexOf("]]");
+
+                if (end<0)
+                {
+                    output.Append("[[" + input);
+                    break;
+                }
+
+
+                distanceInputSplit = input.Remove(end).Split(':'); // string between [[ and ]] split on ":"
+                input=input.Substring(end+2); // everything right of "]]"
+
+                if (distanceInputSplit.Length==0)
+                {
+                    continue;
+                }
+                else if (distanceInputSplit.Length==1)
+                {
+                    distance=GetDistance(planet,systemName,stepID,"[[...]] item in a " + fieldName,distanceInputSplit[0]);
+                }
+                else
+                {
+                    if (!SFS.Base.planetLoader.planets.ContainsKey(distanceInputSplit[1].Trim()))
+                    {
+                        throw new _InternalException
+                        (
+                            string.Format
+                                (
+                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a {2} field containing a [[..:..]] escape with a planet name referring to a non-existent planet \"{3}\""
+                                    ,systemName
+                                    , stepID
+                                    ,fieldName
+                                    ,distanceInputSplit[1].Trim()
+                                )
+                        );
+                    }
+                    distance=GetDistance
+                        (
+                            SFS.Base.planetLoader.planets[distanceInputSplit[1].Trim()]
+                            ,systemName
+                            ,stepID
+                            ,"[[...:...]] item in a " + fieldName
+                            ,distanceInputSplit[0].Trim()
+                        );
+                }
+
+                switch((int)System.Math.Floor(System.Math.Log10(distance)/3))
+                {
+                    case 1:output.AppendFormat("{0:G4} km", distance/1.0e3); break;
+                    case 2:output.AppendFormat("{0:G4} Mm", distance/1.0e6); break;
+                    case 3:output.AppendFormat("{0:G4} Gm", distance/1.0e9); break;
+                    case 4:output.AppendFormat("{0:G4} Tm", distance/1.0e12); break;
+                    default:
+                        if (distance<1000)
+                        {
+                            output.AppendFormat("{0:G4} m", distance);
+                        }
+                        else
+                        {
+                            output.AppendFormat("{0:G4} ly", distance/(86400.0*365.2425*299762458.0));
+                        }
+                     break;
+                }
+            }
+
+            return output.ToString();
+        }
 
         /// <summary>Get the challange steps from the supplies values</summary>
         private static System.Collections.Generic.List<SFS.Logs.ChallengeStep>
@@ -358,6 +456,7 @@ namespace CustomChallengesMod
                         try
                         {
                             bool hasData = true;
+                            bool canAdd=false;
 
                             if (oneInputChallenge.id.Trim()=="")
                             {
@@ -432,6 +531,35 @@ namespace CustomChallengesMod
 
                             if (hasData)
                             {
+                                if (SFS.Base.worldBase!=null && SFS.Base.worldBase.settings!=null && SFS.Base.worldBase.settings.difficulty!=null)
+                                {
+                                    switch (SFS.Base.worldBase.settings.difficulty.difficulty)
+                                    {
+                                        case SFS.WorldBase.Difficulty.DifficultyType.Normal:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="normal" );
+                                        break;
+
+                                        case SFS.WorldBase.Difficulty.DifficultyType.Hard:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="hard" );
+                                        break;
+
+                                        case SFS.WorldBase.Difficulty.DifficultyType.Realistic:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="realistic" );
+                                        break;
+
+                                        default:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
+                                }
+                            }
+
+                            if (hasData && canAdd)
+                            {
                                 if (oneInputChallenge.ownerName.Trim()=="")
                                 {
                                     throw new _InternalException
@@ -475,7 +603,14 @@ namespace CustomChallengesMod
                                         );
                                 }
 
-                                string title=oneInputChallenge.title;
+                                string title=ExpandDistances
+                                    (
+                                        oneOutputChallenge.owner
+                                        ,solarSystem.name
+                                        ,oneOutputChallenge.id
+                                        ,"title"
+                                        ,oneInputChallenge.title
+                                    );
                                 oneOutputChallenge.title=new System.Func<string>(() => title);
 
                                 if (oneInputChallenge.description.Trim()=="")
@@ -491,10 +626,17 @@ namespace CustomChallengesMod
                                         );
                                 }
 
-                                string description=oneInputChallenge.description;
+                                string description=ExpandDistances
+                                    (
+                                        oneOutputChallenge.owner
+                                        ,solarSystem.name
+                                        ,oneOutputChallenge.id
+                                        ,"description"
+                                        ,oneInputChallenge.description
+                                    );
                                 oneOutputChallenge.description=new System.Func<string>(() => description);
 
-                                switch (oneInputChallenge.difficulty.ToLower().Trim())
+                                switch (oneInputChallenge.challengeDifficulty.ToLower().Trim())
                                 {
                                     case "easy":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Easy;break;
                                     case "medium":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Medium;break;
@@ -529,18 +671,21 @@ namespace CustomChallengesMod
 
                             if (hasData)
                             {
-                                challengesById[oneOutputChallenge.id]=new SFS.Logs.Challenge
-                                    (
-                                        oneOutputChallenge.displayPriority
-                                        ,oneOutputChallenge.id
-                                        ,oneOutputChallenge.owner
-                                        ,oneOutputChallenge.icon
-                                        ,oneOutputChallenge.title
-                                        ,oneOutputChallenge.description
-                                        ,oneOutputChallenge.difficulty
-                                        ,oneOutputChallenge.returnSafely
-                                        ,oneOutputChallenge.steps
-                                    );
+                                if (canAdd)
+                                {
+                                    challengesById[oneOutputChallenge.id]=new SFS.Logs.Challenge
+                                        (
+                                            oneOutputChallenge.displayPriority
+                                            ,oneOutputChallenge.id
+                                            ,oneOutputChallenge.owner
+                                            ,oneOutputChallenge.icon
+                                            ,oneOutputChallenge.title
+                                            ,oneOutputChallenge.description
+                                            ,oneOutputChallenge.difficulty
+                                            ,oneOutputChallenge.returnSafely
+                                            ,oneOutputChallenge.steps
+                                        );
+                                }
                             }
                             else if (challengesById.ContainsKey(oneOutputChallenge.id))
                             {

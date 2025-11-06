@@ -9,7 +9,7 @@
         ,"title":"Launch below 100t"
         ,"description":"Launch with a rocket under 100 tonnes"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -28,7 +28,7 @@
         ,"title":"Reach 1 radian downrange"
         ,"description":"Reach 1 radian downrange"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -46,7 +46,7 @@
         ,"title":"Reach 100km altitude"
         ,"description":"Reach 100km altitude"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -64,7 +64,7 @@
         ,"title":"Reach 1 Radius altitude"
         ,"description":"Reach 1 Radius altitude"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -82,7 +82,7 @@
         ,"title":"Reach 10Mm altitude"
         ,"description":"Reach 10Mm altitude"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -100,7 +100,7 @@
         ,"title":"Reach half of SOI altitude"
         ,"description":"Reach half of SOI altitude"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -118,7 +118,7 @@
         ,"title":"Reach 0.1 Gm altitude"
         ,"description":"Reach 0.1Gm altitude"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -136,7 +136,7 @@
         ,"title":"Minimum apogee 100km"
         ,"description":"Earth orbit with minimum apoapsis 100km"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -154,7 +154,7 @@
         ,"title":"Minimum perigee 100km"
         ,"description":"Earth orbit with minimum periapsis 100km"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -172,7 +172,7 @@
         ,"title":"Minimum Earth SMA 700km"
         ,"description":"Earth orbit with minimum semi-major axis 700km"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -190,7 +190,7 @@
         ,"title":"Maximum Earth ecc 0.01"
         ,"description":"Earth orbit with maximum eccentricity 0.01"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -209,7 +209,7 @@
         ,"title":"100t To Low Earth Orbit"
         ,"description":"Get at least 100 tonnes to low Earth orbit"
         ,"ownerName":"Earth"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -228,7 +228,7 @@
         ,"title":"Moon and asteroid flyby"
         ,"description":"Flyby both the Moon and the captured asteroid"
         ,"ownerName":"Earth"
-        ,"difficulty": "Hard"
+        ,"challengeDifficuty": "Hard"
         ,"returnSafely": false
         ,"steps":
             [
@@ -257,7 +257,7 @@
         ,"title":"Moon flyby within 50km"
         ,"description":"Flyby the moon within 50km"
         ,"ownerName":"Moon"
-        ,"difficulty": "Easy"
+        ,"challengeDifficuty": "Easy"
         ,"returnSafely": false
         ,"steps":
             [
@@ -275,7 +275,7 @@
         ,"title":"100t To The Moon"
         ,"description":"Land at least 100 tonnes on the Moon"
         ,"ownerName":"Moon"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": false
         ,"steps":
             [
@@ -293,7 +293,7 @@
         ,"title":"Moon impact"
         ,"description":"Impact the Moon at more than 200m/s"
         ,"ownerName":"Moon"
-        ,"difficulty": "Hard"
+        ,"challengeDifficuty": "Hard"
         ,"returnSafely": false
         ,"steps":
             [
@@ -311,7 +311,7 @@
         ,"title":"Moon Small Tour"
         ,"description":"Land on any two separate landmarks"
         ,"ownerName":"Moon"
-        ,"difficulty": "Hard"
+        ,"challengeDifficuty": "Hard"
         ,"returnSafely": false
         ,"steps":
             [
@@ -329,7 +329,7 @@
         ,"title":"Moon high orbit return"
         ,"description":"Reach high Moon orbit and return safely"
         ,"ownerName":"Moon"
-        ,"difficulty": "Medium"
+        ,"challengeDifficuty": "Medium"
         ,"returnSafely": true
         ,"steps":
             [
@@ -347,7 +347,7 @@
         ,"title":"Moon escape and return"
         ,"description":"Escape from the Moon and return safely to the Moon"
         ,"ownerName":"Moon"
-        ,"difficulty": "Extreme"
+        ,"challengeDifficuty": "Extreme"
         ,"returnSafely": false
         ,"steps":
             [
@@ -369,7 +369,7 @@
         ,"title":"Moon sub orbital"
         ,"description":"Moon sub orbital (30km icon)"
         ,"ownerName":"Moon"
-        ,"difficulty": "Easy"
+        ,"challengeDifficuty": "Easy"
         ,"returnSafely": false
         ,"steps":
             [
@@ -387,7 +387,7 @@
         ,"title":"Moon low orbit"
         ,"description":"Moon low orbit"
         ,"ownerName":"Moon"
-        ,"difficulty": "Easy"
+        ,"challengeDifficuty": "Easy"
         ,"returnSafely": false
         ,"steps":
             [
@@ -405,7 +405,7 @@
         ,"title":"Moon transfer orbit"
         ,"description":"Moon transfer orbital (50Km icon)"
         ,"ownerName":"Moon"
-        ,"difficulty": "Easy"
+        ,"challengeDifficuty": "Easy"
         ,"returnSafely": false
         ,"steps":
             [
