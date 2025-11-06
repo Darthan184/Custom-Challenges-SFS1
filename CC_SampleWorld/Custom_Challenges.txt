@@ -1,0 +1,209 @@
+[
+    {
+        "id":"NearEarth_Tour"
+        ,"icon": "flyby.png"
+        ,"priority":0
+        ,"title":"Moon and asteroid flyby"
+        ,"description":"Flyby both the Moon and the captured asteroid"
+        ,"ownerName":"Earth"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "stepType":"Multi"
+                    ,"steps":
+                        [
+                            {
+                                "planetName":"Moon"
+                                ,"stepType":"Orbit"
+                                ,"orbitType":"Esc"
+                            }
+                            ,{
+                                "planetName":"Near_Earth_Asteroid"
+                                ,"stepType":"Orbit"
+                                ,"orbitType":"Esc"
+                            }
+                        ]
+                }
+            ]
+    }
+    ,{
+        "id":"LEO_Heavy"
+        ,"icon": "Reach_Orbit"
+        ,"priority":-1
+        ,"title":"Heavy Payload To Low Earth Orbit"
+        ,"description":"Get at least 800 tonnes to low Earth orbit"
+        ,"ownerName":"Earth"
+        ,"difficulty":"Normal"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Earth"
+                    ,"stepType":"Orbit"
+                    ,"orbitType": "Low"
+                    ,"minMass": 800
+                }
+            ]
+    }
+    ,{
+        "id":"LEO_Heavy"
+        ,"icon": "Reach_Orbit"
+        ,"priority":-1
+        ,"title":"Heavy Payload To Low Earth Orbit"
+        ,"description":"Get at least 400 tonnes to low Earth orbit"
+        ,"ownerName":"Earth"
+        ,"difficulty":"Hard"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Earth"
+                    ,"stepType":"Orbit"
+                    ,"orbitType": "Low"
+                    ,"minMass": 400
+                }
+            ]
+    }
+    ,{
+        "id":"LEO_Heavy"
+        ,"icon": "Reach_Orbit"
+        ,"priority":-1
+        ,"title":"Heavy Payload To Low Earth Orbit"
+        ,"description":"Get at least 150 tonnes to low Earth orbit"
+        ,"ownerName":"Earth"
+        ,"difficulty":"Realistic"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Earth"
+                    ,"stepType":"Orbit"
+                    ,"orbitType": "Low"
+                    ,"minMass": 150
+                }
+            ]
+    }
+    ,{
+        "id":"Moon_CloseFlyby"
+        ,"icon": "flyby.png"
+        ,"priority":1
+        ,"title":"Moon flyby within [[2A]]"
+        ,"description":"Flyby the moon within [[2A]]"
+        ,"ownerName":"Moon"
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Moon"
+                    ,"stepType":"Height"
+                    ,"maxHeight": "2A"
+                }
+            ]
+    }
+    ,{
+        "id":"Moon_Land_Heavy"
+        ,"icon": "Land_One_Way"
+        ,"priority":-1
+        ,"title":"Heavy Payload To The Moon"
+        ,"description":"Land at least 500 tonnes on the Moon"
+        ,"ownerName":"Moon"
+        ,"difficulty":"Normal"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Moon"
+                    ,"stepType":"Land"
+                    ,"minMass": 500
+                }
+            ]
+    }
+    ,{
+        "id":"Moon_Land_Heavy"
+        ,"icon": "Land_One_Way"
+        ,"priority":-1
+        ,"title":"Heavy Payload To The Moon"
+        ,"description":"Land at least 250 tonnes on the Moon"
+        ,"ownerName":"Moon"
+        ,"difficulty":"Hard"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Moon"
+                    ,"stepType":"Land"
+                    ,"minMass": 250
+                }
+            ]
+    }
+    ,{
+        "id":"Moon_Land_Heavy"
+        ,"icon": "Land_One_Way"
+        ,"priority":-1
+        ,"title":"Heavy Payload To The Moon"
+        ,"description":"Land at least 100 tonnes on the Moon"
+        ,"ownerName":"Moon"
+        ,"difficulty":"Realistic"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Moon"
+                    ,"stepType":"Land"
+                    ,"minMass": 100
+                }
+            ]
+    }
+    ,{
+        "id":"Moon_SmallTour"
+        ,"icon": "Land_Return"
+        ,"priority":-1
+        ,"title":"Moon Small Tour"
+        ,"description":"Land on any two separate landmarks"
+        ,"ownerName":"Moon"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Moon"
+                    ,"stepType":"Any_Landmarks"
+                    ,"count": 2
+                }
+            ]
+    }
+    ,{
+        "id":"Europa_Below100t"
+        ,"icon": "Capture"
+        ,"priority":-1
+        ,"title":"Reach low Europa orbit under 100t"
+        ,"description":"Reach low Europa orbit using a rocket no heavier than 100 tonnes"
+        ,"ownerName":"Europa"
+        ,"difficulty":"Normal"
+        ,"challengeDifficulty": "Extreme"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Earth"
+                    ,"stepType":"Height"
+                    ,"minHeight": 100
+                    ,"maxMass": 100
+                }
+                ,{
+                    "planetName":"Europa"
+                    ,"stepType":"Orbit"
+                    ,"orbitType":"Low"
+                }
+            ]
+    }
+]

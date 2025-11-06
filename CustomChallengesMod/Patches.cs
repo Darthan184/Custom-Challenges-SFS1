@@ -158,7 +158,7 @@ namespace CustomChallengesMod
             return output.ToString();
         }
 
-        /// <summary>Get the challange steps from the supplies values</summary>
+        /// <summary>Get the challenge steps from the supplies values</summary>
         private static System.Collections.Generic.List<SFS.Logs.ChallengeStep>
             GetSteps(string systemName, string id, CustomChallengesMod.CustomChallengesData.Step[] inputSteps)
         {
