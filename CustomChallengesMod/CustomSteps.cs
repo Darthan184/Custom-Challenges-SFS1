@@ -39,6 +39,183 @@
         }
     }
 
+    /// <summary>Data for a one of several challenge steps</summary>
+    public class Step_OneOf : SFS.Logs.ChallengeStep
+    {
+        public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
+        private string [] _delim = new string[]{"|a"};
+
+        public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
+        {
+            bool stepCompleted=false;
+            string[] stepProgress=new string[steps.Count];
+
+            for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
+
+            if (!string.IsNullOrEmpty(progress))
+            {
+                string[] stepProgress_New=progress.Split(_delim, System.StringSplitOptions.None);
+                for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
+                {
+                    stepProgress[stepIndex]=stepProgress_New[stepIndex];
+                }
+            }
+
+            for (int stepIndex=0;stepIndex<steps.Count;stepIndex++)
+            {
+                SFS.Logs.ChallengeStep oneStep = steps[stepIndex];
+                if (oneStep.IsEligible(location.planet) && oneStep.IsCompleted(location,recorder,ref stepProgress[stepIndex]))
+                {
+                    stepCompleted=true;
+                }
+            }
+            progress = string.Join(_delim[0],stepProgress);
+            return stepCompleted;
+        }
+
+        public bool My_IsEligible(SFS.WorldBase.Planet currentPlanet)
+        {
+            foreach (SFS.Logs.ChallengeStep oneStep in steps)
+            {
+                if (oneStep.IsEligible(currentPlanet)) return true;
+            }
+            return false;
+        }
+
+        public override string OnConflict(string a, string b)
+        {
+            string[] progressA;
+            string[] progressB;
+            string[] stepProgress = new string[steps.Count];
+
+            if (string.IsNullOrEmpty(a))
+            {
+                progressA=new string[steps.Count];
+            }
+            else
+            {
+                progressA=a.Split(_delim, System.StringSplitOptions.None);
+            }
+
+            if (string.IsNullOrEmpty(b))
+            {
+                progressB=new string[steps.Count];
+            }
+            else
+            {
+                progressB=b.Split(_delim, System.StringSplitOptions.None);
+            }
+
+            for (int stepIndex=0;stepIndex<steps.Count;stepIndex++)
+            {
+                if (stepIndex<progressA.Length && stepIndex<progressB.Length)
+                {
+                    stepProgress[stepIndex]=steps[stepIndex].OnConflict(progressA[stepIndex], progressB[stepIndex]);
+                }
+                else if (stepIndex<progressA.Length)
+                {
+                    stepProgress[stepIndex]=progressA[stepIndex];
+                }
+                else if (stepIndex<progressB.Length)
+                {
+                    stepProgress[stepIndex]=progressB[stepIndex];
+                }
+            }
+            return string.Join(_delim[0],stepProgress);
+        }
+    }
+
+    /// <summary>Data for a all of several challenge steps (replacement for multi)</summary>
+    public class Step_AllOf : SFS.Logs.ChallengeStep
+    {
+        public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
+        private string [] _delim = new string[]{"|b"};
+
+        public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
+        {
+            string[] stepProgress=new string[steps.Count];
+            bool stepCompleted=true;
+
+            for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
+
+            if (!string.IsNullOrEmpty(progress))
+            {
+                string[] stepProgress_New=progress.Split(_delim, System.StringSplitOptions.None);
+                for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
+                {
+                    stepProgress[stepIndex]=stepProgress_New[stepIndex];
+                }
+            }
+
+            for (int stepIndex=0;stepIndex<steps.Count;stepIndex++)
+            {
+                SFS.Logs.ChallengeStep oneStep = steps[stepIndex];
+                if (stepProgress[stepIndex]=="**") continue;
+                if (oneStep.IsEligible(location.planet) && oneStep.IsCompleted(location,recorder,ref stepProgress[stepIndex]))
+                {
+                    stepProgress[stepIndex]="**";
+                }
+                else
+                {
+                    stepCompleted=false;
+                }
+            }
+            progress = string.Join(_delim[0],stepProgress);
+            return stepCompleted;
+        }
+
+        public bool My_IsEligible(SFS.WorldBase.Planet currentPlanet)
+        {
+            foreach (SFS.Logs.ChallengeStep oneStep in steps)
+            {
+                if (oneStep.IsEligible(currentPlanet)) return true;
+            }
+            return false;
+        }
+
+        public override string OnConflict(string a, string b)
+        {
+            string[] progressA;
+            string[] progressB;
+            string[] stepProgress = new string[steps.Count];
+
+            if (string.IsNullOrEmpty(a))
+            {
+                progressA=new string[steps.Count];
+            }
+            else
+            {
+                progressA=a.Split(_delim, System.StringSplitOptions.None);
+            }
+
+            if (string.IsNullOrEmpty(b))
+            {
+                progressB=new string[steps.Count];
+            }
+            else
+            {
+                progressB=b.Split(_delim, System.StringSplitOptions.None);
+            }
+
+            for (int stepIndex=0;stepIndex<steps.Count;stepIndex++)
+            {
+                if (stepIndex<progressA.Length && stepIndex<progressB.Length)
+                {
+                    stepProgress[stepIndex]=steps[stepIndex].OnConflict(progressA[stepIndex], progressB[stepIndex]);
+                }
+                else if (stepIndex<progressA.Length)
+                {
+                    stepProgress[stepIndex]=progressA[stepIndex];
+                }
+                else if (stepIndex<progressB.Length)
+                {
+                    stepProgress[stepIndex]=progressB[stepIndex];
+                }
+            }
+            return string.Join(_delim[0],stepProgress);
+        }
+    }
+
     /// <summary>Data for one extended landing challenge step</summary>
     public class Step_LandExt : SFS.Logs.Step_Land
     {

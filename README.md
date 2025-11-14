@@ -135,12 +135,13 @@ _Challenge_
 _Step_
 
 "planetName" : {string value} (default "")
-* The name of the planet where this step is to be accomplished, not used for stepType="Multi"
+* The name of the planet where this step is to be accomplished, not used for stepType="Multi" or "Any"
 
 "stepType" : {string value} (default "")
 * The type of step. Possible values:
-* "Multi" - multiple steps in any order (buggy - SFS seems to forget the progess in some cases)
-* "Any_Landmarks" - a numbe of landmarks in ay order (buggy - SFS seems to forget the progess in some cases)
+* "Multi" - multiple steps in any order (buggy - SFS seems to forget the progress in some cases)
+* "Any" - any one of the specified steps
+* "Any_Landmarks" - a number of landmarks in any order (buggy - SFS seems to forget the progress in some cases)
 * "Downrange" - used if landed a minimum distance from the current(?) launch pad . Effect on planets without a current launchpad is unclear.
 * "Height" - used for altitude reached.
 * "Impact" - impact at a minumum velocity, unclear how this works
@@ -149,7 +150,9 @@ _Step_
 * "CustomOrbit" - orbit this planet with the specified orbital parameters. N.B. this does not appear to work for the Sun for some reason - will need expermentation.
 
 "steps" : {array of step values} (default null)
-*  Only used for stepType="Multi", the list of steps that need to be accomplished in any order.
+* Used for stepType="Multi" or "Any", the steps tha apply to this challenge
+* "Multi":the list of steps that all need to be accomplished (in any order)
+* "Any":the list of steps, one of which must be accomplished
 
 "count" : {int value} (default 0)
 * only used for stepType="Any_Landmarks", the minimum number of landmarks that need to be landed on.

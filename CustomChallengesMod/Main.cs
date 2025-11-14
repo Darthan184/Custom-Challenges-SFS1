@@ -6,7 +6,7 @@
         public override string DisplayName => "Custom Challenges Support";
         public override string Author => "Darthan";
         public override string MinimumGameVersionNecessary => "1.5.10.2";
-        public override string ModVersion => "v1.0";
+        public override string ModVersion => "v1.1";
         public override string Description => "Support for custom challenges for custom solar systems";
 
 //~         public System.Collections.Generic.Dictionary<string, SFS.IO.FilePath> UpdatableFiles =>

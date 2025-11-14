@@ -19,12 +19,13 @@
         [System.Serializable]
         public class Step
         {
-            /// <summary>The name of the planet where this step is to be accomplished, not used for stepType="Multi"</summary>
+            /// <summary>The name of the planet where this step is to be accomplished, not used for stepType="Multi" or "Any"</summary>
             public string planetName="";
 
             /// <summary>
             /// The type of step. Possible values:
             /// "Multi" - multiple steps in any order (buggy - SFS seems to forget the progess in some cases)
+            /// "Any" - any one of the specified steps
             /// "Any_Landmarks" - a numbe of landmarks in ay order (buggy - SFS seems to forget the progess in some cases)
             /// "Downrange" - used if landed a minimum distance from the current(?) launch pad . Effect on planets without a current launchpad is unclear.
             /// "Height" - used for altitude reached.
@@ -36,7 +37,9 @@
             public string stepType="";
 
             /// <summary>
-            /// Only used for stepType="Multi", the list of steps that need to be accomplished in any order.
+            /// Used for stepType="Multi" or "Any", the steps tha apply to this challenge
+            /// "Multi":the list of steps that all need to be accomplished (in any order)
+            /// "Any":the list of steps, one of which must be accomplished
             /// </summary>
             public Step[] steps = null;
 

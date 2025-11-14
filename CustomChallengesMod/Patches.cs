@@ -4,8 +4,28 @@ using UnityEngine; // contains extensions
 
 namespace CustomChallengesMod
 {
+    [HarmonyLib.HarmonyPatch(typeof(SFS.Logs.ChallengeStep), "IsEligible")]
+    class SFS_Logs_ChallengeStep_IsEligible
+    {
+        /// <summary>Attempt to simulate a virtual function</summary>
+        static bool Prefix(ref bool __result,SFS.WorldBase.Planet currentPlanet,SFS.Logs.ChallengeStep __instance)
+        {
+            if ( __instance is CustomChallengesMod.CustomSteps.Step_OneOf step_OneOf)
+            {
+                __result = step_OneOf.My_IsEligible(currentPlanet);
+                return false;
+            }
+            else if ( __instance is CustomChallengesMod.CustomSteps.Step_AllOf step_AllOf)
+            {
+                __result = step_AllOf.My_IsEligible(currentPlanet);
+                return false;
+            }
+            return true;
+        }
+    }
+
     [HarmonyLib.HarmonyPatch(typeof(SFS.Logs.Challenge), "CollectChallenges")]
-    class WorldBase_PlanetLoader
+    class SFS_Logs_Challenge_CollectChallenges
     {
         private class _InternalException : System.Exception
         {
@@ -170,7 +190,7 @@ namespace CustomChallengesMod
                 SFS.WorldBase.Planet planet=null;
                 string stepID = string.Format("{0}/{1:D}", id, stepCount++);
 
-                if (oneInputStep.stepType.ToLower().Trim() != "multi")
+                if (oneInputStep.stepType.ToLower().Trim() != "multi" && oneInputStep.stepType.ToLower().Trim() != "any")
                 {
                     if (oneInputStep.planetName.Trim()=="")
                     {
@@ -218,7 +238,15 @@ namespace CustomChallengesMod
                 {
                     case "multi":
                     {
-                        SFS.Logs.MultiStep oneOutputStep = new SFS.Logs.MultiStep();
+                        CustomChallengesMod.CustomSteps.Step_AllOf oneOutputStep = new CustomChallengesMod.CustomSteps.Step_AllOf();
+                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps);
+                        outputSteps.Add(oneOutputStep);
+                    }
+                    break;
+
+                    case "any":
+                    {
+                        CustomChallengesMod.CustomSteps.Step_OneOf oneOutputStep = new CustomChallengesMod.CustomSteps.Step_OneOf();
                         oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps);
                         outputSteps.Add(oneOutputStep);
                     }
