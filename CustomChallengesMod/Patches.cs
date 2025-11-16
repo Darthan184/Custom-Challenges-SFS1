@@ -254,9 +254,12 @@ namespace CustomChallengesMod
 
                     case "any_landmarks":
                     {
-                        SFS.Logs.Step_Any_Landmarks oneOutputStep = new SFS.Logs.Step_Any_Landmarks();
+                        CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt oneOutputStep =
+                            new CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt();
                         oneOutputStep.planet=planet;
                         oneOutputStep.count=oneInputStep.count;
+                        oneOutputStep.minMass=oneInputStep.minMass;
+                        oneOutputStep.maxMass=oneInputStep.maxMass;
                         outputSteps.Add(oneOutputStep);
                     }
                     break;

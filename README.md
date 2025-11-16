@@ -139,9 +139,16 @@ _Step_
 
 "stepType" : {string value} (default "")
 * The type of step. Possible values:
-* "Multi" - multiple steps in any order (buggy - SFS seems to forget the progress in some cases)
+* "Multi" - multiple steps in any order
+    * note SFS seemed to forget the progress in some cases, this may now be fixed
+    * does not support the "Impact" step type as a sub-step.
+    
 * "Any" - any one of the specified steps
-* "Any_Landmarks" - a number of landmarks in any order (buggy - SFS seems to forget the progress in some cases)
+    * does not support the "Impact" step type as a sub-step.
+
+* "Any_Landmarks" - a number of landmarks in any order
+    * note buggy - SFS seems to forget the progress in some cases
+
 * "Downrange" - used if landed a minimum distance from the current(?) launch pad . Effect on planets without a current launchpad is unclear.
 * "Height" - used for altitude reached.
 * "Impact" - impact at a minumum velocity, unclear how this works
@@ -170,10 +177,14 @@ _Step_
 * Only used for stepType="Impact". The mimimum velocity at impact in m/s.
 
 "minMass" : {double value} (default double.NaN)
-* Used for stepType="Height","Land","Orbit","CustomOrbit". The minimum rocket mass in tonnes. N.B. If already in orbit (or landed) docking additional rockets can meet the challenge.
+* Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". The minimum rocket mass in tonnes.
+    * If already in orbit (or landed) docking additional rockets can meet the challenge.
+    * For "Any_Landmarks" the rocket mass is checked for ***all*** landings
 
 "maxMass" : {double value} (default double.NaN)
-* Used for stepType="Height","Land","Orbit","CustomOrbit". The maximum rocket mass in tonnes. With "Height" and a low value can be used to specify a maximum launch mass.
+* Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". The maximum rocket mass in tonnes.
+    * With "Height" and a low value can be used to specify a maximum launch mass.
+    * For "Any_Landmarks" the rocket mass is checked for ***all*** landings
 
 "orbitType" : {string value} (default "")
 * Only used for stepType="Orbit". The type of orbit the needs to be reached. Note, each condition is checked in the following order and the first matching one is counted. Possible values:

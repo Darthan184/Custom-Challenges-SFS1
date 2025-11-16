@@ -229,6 +229,52 @@
         }
     }
 
+    /// <summary>Data for one extended any landmarks step</summary>
+    public class Step_Any_LandmarksExt : SFS.Logs.Step_Any_Landmarks
+    {
+        private string [] _delim = new string[]{"|c"};
+        public double maxMass=double.NaN;
+        public double minMass=double.NaN;
+
+        public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
+        {
+            bool result = false;
+
+            if (!string.IsNullOrEmpty(progress)) progress= string.Join(",",progress.Split(_delim, System.StringSplitOptions.None));
+            result = base.IsCompleted(location,recorder,ref progress);
+            if (!string.IsNullOrEmpty(progress)) progress= string.Join(_delim[0],progress.Split(','));
+
+            if (result) result = Utility.CheckMass(minMass,maxMass);
+            return result;
+        }
+        public override string OnConflict(string a, string b)
+        {
+            System.Collections.Generic.HashSet<string> progressA;
+            System.Collections.Generic.HashSet<string> progressB;
+
+            if (string.IsNullOrEmpty(a))
+            {
+                progressA=new System.Collections.Generic.HashSet<string>();
+            }
+            else
+            {
+                progressA=new System.Collections.Generic.HashSet<string>(a.Split(_delim, System.StringSplitOptions.None));
+            }
+
+            if (string.IsNullOrEmpty(b))
+            {
+                progressB=new System.Collections.Generic.HashSet<string>();
+            }
+            else
+            {
+                progressB= new System.Collections.Generic.HashSet<string>(b.Split(_delim, System.StringSplitOptions.None));
+            }
+
+            progressA.UnionWith(progressB);
+            return string.Join(_delim[0],progressA);
+        }
+    }
+
     /// <summary>Data for one custom orbit challenge step</summary>
     public class Step_CustomOrbit : SFS.Logs.ChallengeStep
     {
