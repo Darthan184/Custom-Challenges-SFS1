@@ -45,6 +45,9 @@
         public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
         private string [] _delim = new string[]{"|a"};
 
+        public int Depth
+        { get { return (int)(_delim[0][1])-(int)'a'; } set { _delim[0]="|"+(char)((int)'a'+value);} }
+
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
             bool stepCompleted=false;
@@ -130,6 +133,9 @@
     {
         public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
         private string [] _delim = new string[]{"|b"};
+
+        public int Depth
+        { get { return (int)(_delim[0][1])-(int)'a'; } set { _delim[0]="|"+(char)((int)'a'+value);} }
 
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
@@ -235,6 +241,9 @@
         private string [] _delim = new string[]{"|c"};
         public double maxMass=double.NaN;
         public double minMass=double.NaN;
+
+        public int Depth
+        { get { return (int)(_delim[0][1])-(int)'a'; } set { _delim[0]="|"+(char)((int)'a'+value);} }
 
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {

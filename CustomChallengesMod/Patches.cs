@@ -180,7 +180,7 @@ namespace CustomChallengesMod
 
         /// <summary>Get the challenge steps from the supplies values</summary>
         private static System.Collections.Generic.List<SFS.Logs.ChallengeStep>
-            GetSteps(string systemName, string id, CustomChallengesMod.CustomChallengesData.Step[] inputSteps)
+            GetSteps(string systemName, string id, CustomChallengesMod.CustomChallengesData.Step[] inputSteps, int depth=0)
         {
             System.Collections.Generic.List<SFS.Logs.ChallengeStep> outputSteps = new System.Collections.Generic.List<SFS.Logs.ChallengeStep>();
             int stepCount = 1;
@@ -239,7 +239,8 @@ namespace CustomChallengesMod
                     case "multi":
                     {
                         CustomChallengesMod.CustomSteps.Step_AllOf oneOutputStep = new CustomChallengesMod.CustomSteps.Step_AllOf();
-                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps);
+                        oneOutputStep.Depth = depth;
+                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps,depth+1);
                         outputSteps.Add(oneOutputStep);
                     }
                     break;
@@ -247,7 +248,8 @@ namespace CustomChallengesMod
                     case "any":
                     {
                         CustomChallengesMod.CustomSteps.Step_OneOf oneOutputStep = new CustomChallengesMod.CustomSteps.Step_OneOf();
-                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps);
+                        oneOutputStep.Depth = depth;
+                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps,depth+1);
                         outputSteps.Add(oneOutputStep);
                     }
                     break;
@@ -260,6 +262,7 @@ namespace CustomChallengesMod
                         oneOutputStep.count=oneInputStep.count;
                         oneOutputStep.minMass=oneInputStep.minMass;
                         oneOutputStep.maxMass=oneInputStep.maxMass;
+                        oneOutputStep.Depth = depth;
                         outputSteps.Add(oneOutputStep);
                     }
                     break;
@@ -744,6 +747,15 @@ namespace CustomChallengesMod
                 UnityEngine.Debug.LogErrorFormat("[CustomChallengesMod.CollectChallenges.Postfix-{0}] {1}",traceID,excp.ToString());
                 return;
             }
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(SFS.Stats.ChallengeRecorder), "TryCompleteSteps")]
+    class SFS_Stats_ChallengeRecorder_TryCompleteSteps
+    {
+        static void Postfix(SFS.Stats.ChallengeRecorder __instance)
+        {
+            __instance.UpdateEligibleSteps();
         }
     }
 }
