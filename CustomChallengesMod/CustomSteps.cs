@@ -21,11 +21,38 @@
             }
             return true;
         }
+        public static bool CheckEngines(bool? hasEngines)
+        {
+            if (hasEngines!=null)
+            {
+                if (SFS.World.PlayerController.main.player.Value is SFS.World.Rocket rocket)
+                {
+                    if
+                        (
+                            rocket.partHolder.HasModule<SFS.Parts.Modules.EngineModule>()
+                            || rocket.partHolder.HasModule<SFS.Parts.Modules.BoosterModule>()
+                        )
+                    {
+                        return (bool)hasEngines;
+                    }
+                    else
+                    {
+                        return !(bool)hasEngines;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     /// <summary>Data for one extended height challenge step</summary>
     public class Step_HeightExt : SFS.Logs.ChallengeStep
     {
+        public bool? hasEngines=null;
         public double maxHeight=double.NaN;
         public double maxMass=double.NaN;
         public double minHeight=double.NaN;
@@ -35,7 +62,7 @@
         {
             if (maxHeight!=double.NaN && location.Height > maxHeight) return false;
             if (minHeight!=double.NaN && location.Height < minHeight) return false;
-            return Utility.CheckMass(minMass,maxMass);
+            return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
         }
     }
 
@@ -225,13 +252,14 @@
     /// <summary>Data for one extended landing challenge step</summary>
     public class Step_LandExt : SFS.Logs.Step_Land
     {
+        public bool? hasEngines=null;
         public double maxMass=double.NaN;
         public double minMass=double.NaN;
 
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
             if (!base.IsCompleted(location,recorder,ref progress)) return false;
-            return Utility.CheckMass(minMass,maxMass);
+            return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
         }
     }
 
@@ -239,6 +267,7 @@
     public class Step_Any_LandmarksExt : SFS.Logs.Step_Any_Landmarks
     {
         private string [] _delim = new string[]{"|c"};
+        public bool? hasEngines=null;
         public double maxMass=double.NaN;
         public double minMass=double.NaN;
 
@@ -253,9 +282,10 @@
             result = base.IsCompleted(location,recorder,ref progress);
             if (!string.IsNullOrEmpty(progress)) progress= string.Join(_delim[0],progress.Split(','));
 
-            if (result) result = Utility.CheckMass(minMass,maxMass);
+            if (result) result = (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
             return result;
         }
+
         public override string OnConflict(string a, string b)
         {
             System.Collections.Generic.HashSet<string> progressA;
@@ -287,6 +317,8 @@
     /// <summary>Data for one custom orbit challenge step</summary>
     public class Step_CustomOrbit : SFS.Logs.ChallengeStep
     {
+        public bool? hasEngines=null;
+
         public double maxApoapsis=double.NaN;
         public double maxEcc=double.NaN;
         public double maxMass=double.NaN;
@@ -315,20 +347,21 @@
             if (minEcc!=double.NaN && orbit.ecc<minEcc) return false ;
             if (minPeriapsis!=double.NaN && orbit.periapsis<minPeriapsis) return false ;
             if (minSma!=double.NaN && orbit.sma<minSma) return false ;
-            return Utility.CheckMass(minMass,maxMass);
+            return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
         }
     }
 
     /// <summary>Data for one extended orbit challenge step</summary>
     public class Step_OrbitExt : SFS.Logs.Step_Orbit
     {
+        public bool? hasEngines=null;
         public double minMass=double.NaN;
         public double maxMass=double.NaN;
 
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
             if (!base.IsCompleted(location,recorder,ref progress)) return false;
-            return Utility.CheckMass(minMass,maxMass);
+            return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
         }
     }
 }

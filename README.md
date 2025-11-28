@@ -139,8 +139,8 @@ _Step_
 
 "stepType" : {string value} (default "")
 * The type of step. Possible values:
-* "Multi" - multiple steps in any order
-    * note SFS seemed to forget the progress in some cases, this may now be fixed
+* "Multi" - all of the specified steps in any order
+    * note buggy - SFS seems to forget the progress in some cases.
     * does not support the "Impact" step type as a sub-step.
     
 * "Any" - any one of the specified steps
@@ -167,14 +167,20 @@ _Step_
 "downrange" : {string value with units} (default "")
 * Only used for stepType="Downrange", the mimimum distance from the launch site
 
+"hasEngines" : {bool value} (default null)
+* Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". Test for the presence of engines or boosters.
+    * If true, rocket must have engines or boosters. (Probably not useful)
+    * If false, rocket must not have engines or boosters. This can be used to test for a released payload. N.B. the payload needs to be the current rocket to detect this.
+    * If omitted or null is not checked.
+
+"impactVelocity" : {int value} (default 0)
+* Only used for stepType="Impact". The mimimum velocity at impact in m/s.
+
 "minHeight" : {string value with units} (default "")
 * Only used for stepType="Height". The minimum altitude to be reached (useful for launches)
 
 "maxHeight" : {string value with units} (default "")
 * Only used for stepType="Height". The maximum altitude to be reached (useful for flybys)
-
-"impactVelocity" : {int value} (default 0)
-* Only used for stepType="Impact". The mimimum velocity at impact in m/s.
 
 "minMass" : {double value} (default double.NaN)
 * Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". The minimum rocket mass in tonnes.

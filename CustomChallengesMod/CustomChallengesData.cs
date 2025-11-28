@@ -54,6 +54,14 @@
             public string downrange="";
 
             /// <summary>
+            /// Used for stepType="Height","Land","Orbit","CustomOrbit","Any_Landmarks".
+            /// If true rocket must have engines or boosters.
+            /// If false rocket must not have engines or boosters.
+            /// If omitted or null is not checked.
+            /// </summary>
+            public bool? hasEngines=null;
+
+            /// <summary>
             /// Only used for stepType="Height". The minimum altitude to be reached (useful for launches)
             /// </summary>
             public string minHeight="";
@@ -69,7 +77,7 @@
             public int impactVelocity=0;
 
             /// <summary>
-            /// Used for stepType="Height","Land","Orbit","CustomOrbit". The minimum rocket mass in tonnes. N.B. If already in orbit
+            /// Used for stepType="Height","Land","Orbit","CustomOrbit","Any_Landmarks". The minimum rocket mass in tonnes. N.B. If already in orbit
             /// (or landed) docking additional rockets can meet the challenge.
             /// </summary>
             public double minMass=double.NaN;

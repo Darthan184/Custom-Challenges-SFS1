@@ -260,6 +260,7 @@ namespace CustomChallengesMod
                             new CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt();
                         oneOutputStep.planet=planet;
                         oneOutputStep.count=oneInputStep.count;
+                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
                         oneOutputStep.minMass=oneInputStep.minMass;
                         oneOutputStep.maxMass=oneInputStep.maxMass;
                         oneOutputStep.Depth = depth;
@@ -281,6 +282,7 @@ namespace CustomChallengesMod
                         CustomChallengesMod.CustomSteps.Step_HeightExt oneOutputStep =
                             new CustomChallengesMod.CustomSteps.Step_HeightExt();
                         oneOutputStep.planet=planet;
+                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
                         oneOutputStep.minHeight=GetDistance(planet,systemName,stepID,"minHeight",oneInputStep.minHeight);
                         oneOutputStep.minMass=oneInputStep.minMass;
                         oneOutputStep.maxHeight=GetDistance(planet,systemName,stepID,"maxHeight",oneInputStep.maxHeight);
@@ -299,11 +301,12 @@ namespace CustomChallengesMod
                     break;
 
                     case "land":
-                        if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0)
+                        if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0 || oneInputStep.hasEngines!=null)
                         {
                             CustomChallengesMod.CustomSteps.Step_LandExt oneOutputStep =
                                 new  CustomChallengesMod.CustomSteps.Step_LandExt();
                             oneOutputStep.planet=planet;
+                            oneOutputStep.hasEngines=oneInputStep.hasEngines;
                             oneOutputStep.minMass=oneInputStep.minMass;
                             oneOutputStep.maxMass=oneInputStep.maxMass;
                             outputSteps.Add(oneOutputStep);
@@ -321,6 +324,8 @@ namespace CustomChallengesMod
                         CustomChallengesMod.CustomSteps.Step_CustomOrbit oneOutputStep =
                             new  CustomChallengesMod.CustomSteps.Step_CustomOrbit();
                         oneOutputStep.planet=planet;
+                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
+
                         oneOutputStep.maxApoapsis=GetDistance(planet,systemName,stepID,"maxApoapsis",oneInputStep.maxApoapsis)+planet.Radius;
                         oneOutputStep.maxEcc=oneInputStep.maxEcc;
                         oneOutputStep.maxMass=oneInputStep.maxMass;
@@ -364,12 +369,13 @@ namespace CustomChallengesMod
                             }
                         }
 
-                        if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0)
+                        if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0 || oneInputStep.hasEngines!=null)
                         {
                             CustomChallengesMod.CustomSteps.Step_OrbitExt oneOutputStep
                                 = new CustomChallengesMod.CustomSteps.Step_OrbitExt();
                             oneOutputStep.planet=planet;
                             oneOutputStep.orbit=outputOrbit;
+                            oneOutputStep.hasEngines=oneInputStep.hasEngines;
                             oneOutputStep.minMass=oneInputStep.minMass;
                             oneOutputStep.maxMass=oneInputStep.maxMass;
                             outputSteps.Add(oneOutputStep);

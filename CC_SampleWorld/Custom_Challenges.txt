@@ -29,11 +29,40 @@
             ]
     }
     ,{
+        "id":"MoonOrAst_Orbit"
+        ,"icon": "Capture"
+        ,"priority":0
+        ,"title":"Orbit Moon or asteroid"
+        ,"description":"Capture into low orbit for either the Moon or the captured asteroid"
+        ,"ownerName":"Earth"
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "stepType":"Any"
+                    ,"steps":
+                        [
+                            {
+                                "planetName":"Moon"
+                                ,"stepType":"Orbit"
+                                ,"orbitType":"Low"
+                            }
+                            ,{
+                                "planetName":"Near_Earth_Asteroid"
+                                ,"stepType":"Orbit"
+                                ,"orbitType":"Low"
+                            }
+                        ]
+                }
+            ]
+    }
+    ,{
         "id":"LEO_Heavy"
         ,"icon": "Reach_Orbit"
         ,"priority":-1
         ,"title":"Heavy Payload To Low Earth Orbit"
-        ,"description":"Get at least 800 tonnes to low Earth orbit"
+        ,"description":"Release a payload of at least 800 tonnes in low Earth orbit"
         ,"ownerName":"Earth"
         ,"difficulty":"Normal"
         ,"challengeDifficulty": "Hard"
@@ -44,6 +73,7 @@
                     "planetName":"Earth"
                     ,"stepType":"Orbit"
                     ,"orbitType": "Low"
+                    ,"hasEngines": false
                     ,"minMass": 800
                 }
             ]
@@ -53,7 +83,7 @@
         ,"icon": "Reach_Orbit"
         ,"priority":-1
         ,"title":"Heavy Payload To Low Earth Orbit"
-        ,"description":"Get at least 400 tonnes to low Earth orbit"
+        ,"description":"Release a payload of at least 400 tonnes in low Earth orbit"
         ,"ownerName":"Earth"
         ,"difficulty":"Hard"
         ,"challengeDifficulty": "Hard"
@@ -64,6 +94,7 @@
                     "planetName":"Earth"
                     ,"stepType":"Orbit"
                     ,"orbitType": "Low"
+                    ,"hasEngines": false
                     ,"minMass": 400
                 }
             ]
@@ -73,7 +104,7 @@
         ,"icon": "Reach_Orbit"
         ,"priority":-1
         ,"title":"Heavy Payload To Low Earth Orbit"
-        ,"description":"Get at least 150 tonnes to low Earth orbit"
+        ,"description":"Release a payload of at least 150 tonnes in low Earth orbit"
         ,"ownerName":"Earth"
         ,"difficulty":"Realistic"
         ,"challengeDifficulty": "Hard"
