@@ -62,7 +62,7 @@
         ,"icon": "Reach_Orbit"
         ,"priority":-1
         ,"title":"Heavy Payload To Low Earth Orbit"
-        ,"description":"Release a payload of at least 800 tonnes in low Earth orbit"
+        ,"description":"Release a payload of at least 800 tonnes in low Earth orbit (Atlas challenge)"
         ,"ownerName":"Earth"
         ,"difficulty":"Normal"
         ,"challengeDifficulty": "Hard"
@@ -116,6 +116,84 @@
                     ,"stepType":"Orbit"
                     ,"orbitType": "Low"
                     ,"minMass": 150
+                }
+            ]
+    }
+    ,{
+        "id":"SolarEscape"
+        ,"icon": "SystemEscape.png"
+        ,"priority":-1
+        ,"title":"Escape Solar System"
+        ,"description":"Escape the solar system using a launcher between 100t and 300t (Voyager Quest)"
+        ,"ownerName":"Sun"
+        ,"difficulty":"Normal"
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Earth"
+                    ,"stepType":"Height"
+                    ,"minHeight": 100
+                    ,"minMass": 100
+                    ,"maxMass": 300
+                }
+                ,{
+                    "planetName":"Sun"
+                    ,"stepType":"Orbit"
+                    ,"orbitType": "Esc"
+                }
+            ]
+    }
+    ,{
+        "id":"SolarEscape"
+        ,"icon": "SystemEscape.png"
+        ,"priority":-1
+        ,"title":"Escape Solar System"
+        ,"description":"Escape the solar system using a launcher between 200t and 600t"
+        ,"ownerName":"Sun"
+        ,"difficulty":"Hard"
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Earth"
+                    ,"stepType":"Height"
+                    ,"minHeight": 100
+                    ,"minMass": 200
+                    ,"maxMass": 600
+                }
+                ,{
+                    "planetName":"Sun"
+                    ,"stepType":"Orbit"
+                    ,"orbitType": "Esc"
+                }
+            ]
+    }
+    ,{
+        "id":"SolarEscape"
+        ,"icon": "SystemEscape.png"
+        ,"priority":-1
+        ,"title":"Escape Solar System"
+        ,"description":"Escape the solar system using a launcher between 600t and 1800t"
+        ,"ownerName":"Sun"
+        ,"difficulty":"Realistic"
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Earth"
+                    ,"stepType":"Height"
+                    ,"minHeight": 100
+                    ,"minMass": 600
+                    ,"maxMass": 1800
+                }
+                ,{
+                    "planetName":"Sun"
+                    ,"stepType":"Orbit"
+                    ,"orbitType": "Esc"
                 }
             ]
     }

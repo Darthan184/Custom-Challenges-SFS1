@@ -301,22 +301,15 @@ namespace CustomChallengesMod
                     break;
 
                     case "land":
-                        if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0 || oneInputStep.hasEngines!=null)
-                        {
-                            CustomChallengesMod.CustomSteps.Step_LandExt oneOutputStep =
-                                new  CustomChallengesMod.CustomSteps.Step_LandExt();
-                            oneOutputStep.planet=planet;
-                            oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                            oneOutputStep.minMass=oneInputStep.minMass;
-                            oneOutputStep.maxMass=oneInputStep.maxMass;
-                            outputSteps.Add(oneOutputStep);
-                        }
-                        else
-                        {
-                            SFS.Logs.Step_Land oneOutputStep = new SFS.Logs.Step_Land();
-                            oneOutputStep.planet=planet;
-                            outputSteps.Add(oneOutputStep);
-                        }
+                    {
+                        CustomChallengesMod.CustomSteps.Step_LandExt oneOutputStep =
+                            new  CustomChallengesMod.CustomSteps.Step_LandExt();
+                        oneOutputStep.planet=planet;
+                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
+                        oneOutputStep.minMass=oneInputStep.minMass;
+                        oneOutputStep.maxMass=oneInputStep.maxMass;
+                        outputSteps.Add(oneOutputStep);
+                    }
                     break;
 
                     case "customorbit":
@@ -369,24 +362,14 @@ namespace CustomChallengesMod
                             }
                         }
 
-                        if (oneInputStep.minMass!=0 || oneInputStep.maxMass!=0 || oneInputStep.hasEngines!=null)
-                        {
-                            CustomChallengesMod.CustomSteps.Step_OrbitExt oneOutputStep
-                                = new CustomChallengesMod.CustomSteps.Step_OrbitExt();
-                            oneOutputStep.planet=planet;
-                            oneOutputStep.orbit=outputOrbit;
-                            oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                            oneOutputStep.minMass=oneInputStep.minMass;
-                            oneOutputStep.maxMass=oneInputStep.maxMass;
-                            outputSteps.Add(oneOutputStep);
-                        }
-                        else
-                        {
-                            SFS.Logs.Step_Orbit oneOutputStep = new SFS.Logs.Step_Orbit();
-                            oneOutputStep.planet=planet;
-                            oneOutputStep.orbit=outputOrbit;
-                            outputSteps.Add(oneOutputStep);
-                        }
+                        CustomChallengesMod.CustomSteps.Step_OrbitExt oneOutputStep
+                            = new CustomChallengesMod.CustomSteps.Step_OrbitExt();
+                        oneOutputStep.planet=planet;
+                        oneOutputStep.orbit=outputOrbit;
+                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
+                        oneOutputStep.minMass=oneInputStep.minMass;
+                        oneOutputStep.maxMass=oneInputStep.maxMass;
+                        outputSteps.Add(oneOutputStep);
                     }
                     break;
 

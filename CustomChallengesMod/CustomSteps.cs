@@ -360,7 +360,16 @@
 
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
-            if (!base.IsCompleted(location,recorder,ref progress)) return false;
+            if (orbit==SFS.Stats.StatsRecorder.Tracker.State_Orbit.Esc && location.planet.SOI==double.PositiveInfinity)
+            {
+                bool success;
+                SFS.World.Orbit orbit = SFS.World.Orbit.TryCreateOrbit(location, calculateTimeParameters: false, calculateEncounters: false, out success);
+                if (!success || orbit.apoapsis!=double.PositiveInfinity) return false;
+            }
+            else
+            {
+                if (!base.IsCompleted(location,recorder,ref progress)) return false;
+            }
             return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
         }
     }
