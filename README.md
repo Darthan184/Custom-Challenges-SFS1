@@ -195,7 +195,7 @@ _Step_
 "orbitType" : {string value} (default "")
 * Only used for stepType="Orbit". The type of orbit the needs to be reached. Note, each condition is checked in the following order and the first matching one is counted. Possible values:
 *  "None" - landed - not sure if this is usefull
-*  "Esc" - apoapsis>SOI - could be used to detect a flyby? does not work for the Sun (SOI is infinite)
+*  "Esc" - apoapsis>SOI - could also be used to detect a flyby
 *  "Sub" - suborbital, periapsis below surface
 *  "High" - periapsis > 1.5 radius above surface
 *  "Trans"- apoapsis > 0.5 radius above surface
