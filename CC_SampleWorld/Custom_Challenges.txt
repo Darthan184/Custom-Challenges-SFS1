@@ -124,7 +124,7 @@
         ,"icon": "SystemEscape.png"
         ,"priority":-1
         ,"title":"Escape Solar System"
-        ,"description":"Escape the solar system using a launcher between 100t and 300t (Voyager Quest)"
+        ,"description":"Send a payload to escape the solar system using a launcher between 100t and 300t (Voyager Quest)"
         ,"ownerName":"Sun"
         ,"difficulty":"Normal"
         ,"challengeDifficulty": "Medium"
@@ -141,6 +141,7 @@
                 ,{
                     "planetName":"Sun"
                     ,"stepType":"Orbit"
+                    ,"hasEngines": false
                     ,"orbitType": "Esc"
                 }
             ]
@@ -150,7 +151,7 @@
         ,"icon": "SystemEscape.png"
         ,"priority":-1
         ,"title":"Escape Solar System"
-        ,"description":"Escape the solar system using a launcher between 200t and 600t"
+        ,"description":"Send a payload to escape the solar system using a launcher between 200t and 600t"
         ,"ownerName":"Sun"
         ,"difficulty":"Hard"
         ,"challengeDifficulty": "Medium"
@@ -167,6 +168,7 @@
                 ,{
                     "planetName":"Sun"
                     ,"stepType":"Orbit"
+                    ,"hasEngines": false
                     ,"orbitType": "Esc"
                 }
             ]
@@ -176,7 +178,7 @@
         ,"icon": "SystemEscape.png"
         ,"priority":-1
         ,"title":"Escape Solar System"
-        ,"description":"Escape the solar system using a launcher between 600t and 1800t"
+        ,"description":"Send a payload to escape the solar system using a launcher between 600t and 1800t"
         ,"ownerName":"Sun"
         ,"difficulty":"Realistic"
         ,"challengeDifficulty": "Medium"
@@ -186,6 +188,7 @@
                 {
                     "planetName":"Earth"
                     ,"stepType":"Height"
+                    ,"hasEngines": false
                     ,"minHeight": 100
                     ,"minMass": 600
                     ,"maxMass": 1800

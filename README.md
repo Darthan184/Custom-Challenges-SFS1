@@ -7,7 +7,7 @@ To specify custom challenges you need to add a Custom_Challenges.txt file and po
 
 The file is a JSON array of challenge definitions each of which also contains a JSON array of steps of various types to be completed in the specified order. The is also a special step type - "Multi" - that contains an array of steps that may be completed in any order.
 
-An example of a Custom_Challenges.txt. Note Custom_Challenges.txt in the CC_SampleWorld.zip file gives more examples:
+An example of a Custom_Challenges.txt. Note Custom_Challenges.txt in the CC_SampleWorld  file gives more examples:
 
 ```
 [
@@ -157,7 +157,7 @@ _Step_
 * "CustomOrbit" - orbit this planet with the specified orbital parameters. N.B. this does not appear to work for the Sun for some reason - will need expermentation.
 
 "steps" : {array of step values} (default null)
-* Used for stepType="Multi" or "Any", the steps tha apply to this challenge
+* Used for stepType="Multi" or "Any", the steps thar apply to this challenge
 * "Multi":the list of steps that all need to be accomplished (in any order)
 * "Any":the list of steps, one of which must be accomplished
 
