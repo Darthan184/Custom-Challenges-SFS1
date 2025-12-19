@@ -83,7 +83,7 @@ Details for each field:
 
 _Challenge_
 
-"id" : {string value} (default "")
+"id" : {string value} (required)
 * The identifier for this challenge. Land and return challenges should start with "Land_" for consistency with standard challenges. N.B. is case-sensitive.
 * If the same id as a vanilla challenge is supplied: this challenge will replace the vanilla challenge.
 * If only the id field is supplied and it is same id as a vanilla challenge: the vanilla challenge will be removed (for this world only).
@@ -105,7 +105,7 @@ _Challenge_
     * Land_{planet name} Where {planet name} is the name of a planet for other land and return safely challenges. N.B. Only these challenges are automatically created for custom systems by SFS.
 
 "icon" : {string value} (default "")
-* indicates which of the icons should be used, omit or leave blank to indicate that an existing challenges should be deleted. If suffixed with '.png' will load a file from Custom_Challenge_Icons/ . Otherwise a standard SFS Icon will be used, one of:
+* indicates which of the icons should be used, omit or leave blank to indicate that an existing challenge should be deleted. If suffixed with '.png' will load a file from Custom_Challenge_Icons/ . Otherwise a standard SFS Icon will be used, one of:
 *  "firstFlight", "10Km", "30Km", "50Km", "Downrange", "Reach_Orbit", "Orbit_High", "Capture", "Tour", "Crash","Land_One_Way", "Land_Return"
 
 "difficulty" : {string value} (default "all")
@@ -114,16 +114,16 @@ _Challenge_
 "priority" : {int value} (default 0)
 * indicates how to sort this challenge, is a small signed integer, higher numbers appear at the top of the list.
 
-"title" : {string value} (default "")
+"title" : {string value} (required if icon is supplied)
 * The title to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string like \[\[3A\]\] or \[\[0.5R:Moon\]\] , specifying planet-relative units will be replaced with a value in m, km, Mm, Gm, Tm or ly. The planet defaults to the one in ownerName
 
-"description" : {string value} (default "")
+"description" : {string value} (required if icon is supplied)
 * The description to be used, N.B. not automatically translated (the in-game ones are translated).
 
-"ownerName" : {string value} (default "")
-* The name of the planet that is the 'owner' of this challenge. This specifies the planet the challenge appears under
+"ownerName" : {string value} (required if icon is supplied)
+* The name of the planet that is the 'owner' of this challenge. This specifies the planet the challenge appears under.
 
-"challengeDifficulty" : {string value} (default "")
+"challengeDifficulty" : {string value} (required if icon is supplied)
 * The challenge difficulty indicator to be used (will be translated). Possible values: Easy, Medium, Hard, Extreme
 
 "returnSafely" : {bool value} (default false)
@@ -134,10 +134,10 @@ _Challenge_
 
 _Step_
 
-"planetName" : {string value} (default "")
+"planetName" : {string value} (required)
 * The name of the planet where this step is to be accomplished, not used for stepType="Multi" or "Any"
 
-"stepType" : {string value} (default "")
+"stepType" : {string value} (required)
 * The type of step. Possible values:
 * "Multi" - all of the specified steps in any order
     * note buggy - SFS seems to forget the progress in some cases.
@@ -192,7 +192,7 @@ _Step_
     * With "Height" and a low value can be used to specify a maximum launch mass.
     * For "Any_Landmarks" the rocket mass is checked for ***all*** landings
 
-"orbitType" : {string value} (default "")
+"orbitType" : {string value} (required if stepType="Orbit")
 * Only used for stepType="Orbit". The type of orbit the needs to be reached. Note, each condition is checked in the following order and the first matching one is counted. Possible values:
 *  "None" - landed - not sure if this is usefull
 *  "Esc" - apoapsis>SOI - could also be used to detect a flyby

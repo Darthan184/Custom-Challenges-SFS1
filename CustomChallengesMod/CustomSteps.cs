@@ -4,15 +4,15 @@
     {
         public static bool CheckMass(double minMass,double maxMass)
         {
-            if (minMass!=double.NaN || maxMass!=double.NaN)
+            if (!double.IsNaN(minMass) || !double.IsNaN(maxMass))
             {
                 if (SFS.World.PlayerController.main.player.Value is SFS.World.Rocket rocket)
                 {
                     double mass = 0;
                     mass = rocket.mass.GetMass();
                     if (mass==0) return false;
-                    if (minMass!=double.NaN && mass<minMass) return false;
-                    if (maxMass!=double.NaN && mass>maxMass) return false;
+                    if (!double.IsNaN(minMass) && mass<minMass) return false;
+                    if (!double.IsNaN(maxMass) && mass>maxMass) return false;
                 }
                 else
                 {
@@ -60,9 +60,22 @@
 
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string _)
         {
-            if (maxHeight!=double.NaN && location.Height > maxHeight) return false;
-            if (minHeight!=double.NaN && location.Height < minHeight) return false;
+            if (!double.IsNaN(maxHeight) && location.Height > maxHeight) return false;
+            if (!double.IsNaN(minHeight) && location.Height < minHeight) return false;
             return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
+        }
+
+        public override string ToString()
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Height");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
+            if (!double.IsNaN(minHeight)) result.AppendFormat(", minHeight:{0:N0}m", minHeight);
+            if (!double.IsNaN(maxHeight)) result.AppendFormat(", maxHeight:{0:N0}m", maxHeight);
+            if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
+            if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
+            return result.ToString();
         }
     }
 
@@ -152,6 +165,40 @@
                 }
             }
             return string.Join(_delim[0],stepProgress);
+        }
+
+        public override string ToString()
+        {
+            return ToStringExt();
+        }
+
+        public string ToStringExt(int depth=1)
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Any");
+
+            int stepNo = 0;
+
+            foreach (SFS.Logs.ChallengeStep oneStep in steps)
+            {
+                if (result.Length>0) result.AppendLine();
+
+                for (int i=0;i<=depth;i++)  result.Append("... ");
+
+                if (oneStep is CustomChallengesMod.CustomSteps.Step_OneOf oneOneOfStep)
+                {
+                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneOneOfStep.ToStringExt(depth+1));
+                }
+                else if(oneStep is CustomChallengesMod.CustomSteps.Step_AllOf oneAllOfStep)
+                {
+                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneAllOfStep.ToStringExt(depth+1));
+                }
+                else
+                {
+                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneStep);
+                }
+            }
+            return result.ToString();
         }
     }
 
@@ -247,6 +294,40 @@
             }
             return string.Join(_delim[0],stepProgress);
         }
+
+        public override string ToString()
+        {
+            return ToStringExt();
+        }
+
+        public string ToStringExt(int depth=1)
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Multi");
+
+            int stepNo = 0;
+
+            foreach (SFS.Logs.ChallengeStep oneStep in steps)
+            {
+                if (result.Length>0) result.AppendLine();
+
+                for (int i=0;i<=depth;i++) result.Append("... ");
+
+                if (oneStep is CustomChallengesMod.CustomSteps.Step_OneOf oneOneOfStep)
+                {
+                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneOneOfStep.ToStringExt(depth+1));
+                }
+                else if(oneStep is CustomChallengesMod.CustomSteps.Step_AllOf oneAllOfStep)
+                {
+                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneAllOfStep.ToStringExt(depth+1));
+                }
+                else
+                {
+                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneStep);
+                }
+            }
+            return result.ToString();
+        }
     }
 
     /// <summary>Data for one extended landing challenge step</summary>
@@ -260,6 +341,17 @@
         {
             if (!base.IsCompleted(location,recorder,ref progress)) return false;
             return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
+        }
+
+        public override string ToString()
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Land");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
+            if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
+            if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
+            return result.ToString();
         }
     }
 
@@ -312,6 +404,18 @@
             progressA.UnionWith(progressB);
             return string.Join(_delim[0],progressA);
         }
+
+        public override string ToString()
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Any_Landmarks");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            result.AppendFormat(", count:{0}", count);
+            if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
+            if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
+            if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
+            return result.ToString();
+        }
     }
 
     /// <summary>Data for one custom orbit challenge step</summary>
@@ -338,16 +442,35 @@
             SFS.World.Orbit orbit = SFS.World.Orbit.TryCreateOrbit(location, calculateTimeParameters: false, calculateEncounters: false, out success);
             if (!success) return false;
 
-            if (maxApoapsis!=double.NaN && (orbit.ecc>1 || orbit.apoapsis>maxApoapsis)) return false ;
-            if (maxEcc!=double.NaN && orbit.ecc>maxEcc) return false ;
-            if (maxPeriapsis!=double.NaN && orbit.periapsis>maxPeriapsis) return false ;
-            if (maxSma!=double.NaN && orbit.sma>maxSma) return false ;
+            if (!double.IsNaN(maxApoapsis) && (orbit.ecc>1 || orbit.apoapsis>maxApoapsis)) return false ;
+            if (!double.IsNaN(maxEcc) && orbit.ecc>maxEcc) return false ;
+            if (!double.IsNaN(maxPeriapsis) && orbit.periapsis>maxPeriapsis) return false ;
+            if (!double.IsNaN(maxSma) && orbit.sma>maxSma) return false ;
 
-            if (minApoapsis!=double.NaN && orbit.apoapsis<minApoapsis) return false ;
-            if (minEcc!=double.NaN && orbit.ecc<minEcc) return false ;
-            if (minPeriapsis!=double.NaN && orbit.periapsis<minPeriapsis) return false ;
-            if (minSma!=double.NaN && orbit.sma<minSma) return false ;
+            if (!double.IsNaN(minApoapsis) && orbit.apoapsis<minApoapsis) return false ;
+            if (!double.IsNaN(minEcc) && orbit.ecc<minEcc) return false ;
+            if (!double.IsNaN(minPeriapsis) && orbit.periapsis<minPeriapsis) return false ;
+            if (!double.IsNaN(minSma) && orbit.sma<minSma) return false ;
             return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
+        }
+
+        public override string ToString()
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("CustomOrbit");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            if (!double.IsNaN(minApoapsis)) result.AppendFormat(", minApoapsis:{0:N0}m", minApoapsis);
+            if (!double.IsNaN(maxApoapsis)) result.AppendFormat(", maxApoapsis:{0:N0}m", maxApoapsis);
+            if (!double.IsNaN(minEcc)) result.AppendFormat(", minEcc:{0}", minEcc);
+            if (!double.IsNaN(maxEcc)) result.AppendFormat(", maxEcc:{0}", maxEcc);
+            if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
+            if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
+            if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
+            if (!double.IsNaN(minPeriapsis)) result.AppendFormat(", minPeriapsis:{0:N0}m", minPeriapsis);
+            if (!double.IsNaN(maxPeriapsis)) result.AppendFormat(", maxPeriapsis:{0:N0}m", maxPeriapsis);
+            if (!double.IsNaN(minSma)) result.AppendFormat(", minSma:{0:N0}m", minSma);
+            if (!double.IsNaN(maxSma)) result.AppendFormat(", maxSma:{0:N0}m", maxSma);
+            return result.ToString();
         }
     }
 
@@ -371,6 +494,44 @@
                 if (!base.IsCompleted(location,recorder,ref progress)) return false;
             }
             return (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
+        }
+
+        public override string ToString()
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Orbit");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            result.AppendFormat(", orbit:{0}", orbit);
+            if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
+            if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
+            if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
+            return result.ToString();
+        }
+    }
+
+    /// <summary>Data for downrange challenge step</summary>
+    public class Step_Downrange : SFS.Logs.Step_Downrange
+    {
+        public override string ToString()
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Downrange");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            result.AppendFormat(", downrange:{0:N0}m", downrange);
+            return result.ToString();
+        }
+    }
+
+    /// <summary>Data for impact challenge step</summary>
+    public class Step_Impact : SFS.Logs.Step_Impact
+    {
+        public override string ToString()
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Impact");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            result.AppendFormat(", impactVelocity:{0:N0}m/s", impactVelocity);
+            return result.ToString();
         }
     }
 }

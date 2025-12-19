@@ -270,7 +270,7 @@ namespace CustomChallengesMod
 
                     case "downrange":
                     {
-                        SFS.Logs.Step_Downrange oneOutputStep = new SFS.Logs.Step_Downrange();
+                        CustomChallengesMod.CustomSteps.Step_Downrange oneOutputStep = new CustomChallengesMod.CustomSteps.Step_Downrange();
                         oneOutputStep.planet=planet;
                         oneOutputStep.downrange=(int)GetDistance(planet,systemName,stepID,"downrange",oneInputStep.downrange);
                         outputSteps.Add(oneOutputStep);
@@ -293,7 +293,7 @@ namespace CustomChallengesMod
 
                     case "impact":
                     {
-                        SFS.Logs.Step_Impact oneOutputStep = new SFS.Logs.Step_Impact();
+                        CustomChallengesMod.CustomSteps.Step_Impact oneOutputStep = new CustomChallengesMod.CustomSteps.Step_Impact();
                         oneOutputStep.planet=planet;
                         oneOutputStep.impactVelocity=oneInputStep.impactVelocity;
                         outputSteps.Add(oneOutputStep);
