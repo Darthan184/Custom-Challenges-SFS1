@@ -92,15 +92,18 @@
         {
             bool stepCompleted=false;
             string[] stepProgress=new string[steps.Count];
+            bool anyProgress = false;
 
             for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
 
             if (!string.IsNullOrEmpty(progress))
             {
                 string[] stepProgress_New=progress.Split(_delim, System.StringSplitOptions.None);
+
                 for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
                 {
                     stepProgress[stepIndex]=stepProgress_New[stepIndex];
+                    if (!string.IsNullOrEmpty(stepProgress[stepIndex])) anyProgress=true;
                 }
             }
 
@@ -112,7 +115,15 @@
                     stepCompleted=true;
                 }
             }
-            progress = string.Join(_delim[0],stepProgress);
+
+            if (anyProgress)
+            {
+                progress = string.Join(_delim[0],stepProgress);
+            }
+            else
+            {
+                progress = null;
+            }
             return stepCompleted;
         }
 
@@ -177,7 +188,7 @@
             System.Text.StringBuilder result = new System.Text.StringBuilder();
             result.Append("Any");
 
-            int stepNo = 0;
+            int stepNo = 1;
 
             foreach (SFS.Logs.ChallengeStep oneStep in steps)
             {
@@ -215,6 +226,7 @@
         {
             string[] stepProgress=new string[steps.Count];
             bool stepCompleted=true;
+            bool anyProgress = false;
 
             for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
 
@@ -224,23 +236,34 @@
                 for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
                 {
                     stepProgress[stepIndex]=stepProgress_New[stepIndex];
+                    if (!string.IsNullOrEmpty(stepProgress[stepIndex])) anyProgress=true;
                 }
             }
 
             for (int stepIndex=0;stepIndex<steps.Count;stepIndex++)
             {
                 SFS.Logs.ChallengeStep oneStep = steps[stepIndex];
-                if (stepProgress[stepIndex]=="**") continue;
-                if (oneStep.IsEligible(location.planet) && oneStep.IsCompleted(location,recorder,ref stepProgress[stepIndex]))
+                if (stepProgress[stepIndex]!="**")
                 {
-                    stepProgress[stepIndex]="**";
+                    if (oneStep.IsEligible(location.planet) && oneStep.IsCompleted(location,recorder,ref stepProgress[stepIndex]))
+                    {
+                        stepProgress[stepIndex]="**";
+                    }
+                    else
+                    {
+                        stepCompleted=false;
+                    }
                 }
-                else
-                {
-                    stepCompleted=false;
-                }
+                if (!string.IsNullOrEmpty(stepProgress[stepIndex])) anyProgress=true;
             }
-            progress = string.Join(_delim[0],stepProgress);
+            if (anyProgress)
+            {
+                progress = string.Join(_delim[0],stepProgress);
+            }
+            else
+            {
+                progress = null;
+            }
             return stepCompleted;
         }
 
@@ -305,7 +328,7 @@
             System.Text.StringBuilder result = new System.Text.StringBuilder();
             result.Append("Multi");
 
-            int stepNo = 0;
+            int stepNo = 1;
 
             foreach (SFS.Logs.ChallengeStep oneStep in steps)
             {
@@ -372,6 +395,7 @@
 
             if (!string.IsNullOrEmpty(progress)) progress= string.Join(",",progress.Split(_delim, System.StringSplitOptions.None));
             result = base.IsCompleted(location,recorder,ref progress);
+
             if (!string.IsNullOrEmpty(progress)) progress= string.Join(_delim[0],progress.Split(','));
 
             if (result) result = (Utility.CheckMass(minMass,maxMass) && Utility.CheckEngines(hasEngines));
