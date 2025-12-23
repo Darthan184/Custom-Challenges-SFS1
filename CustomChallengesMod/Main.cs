@@ -44,9 +44,9 @@
             {
                 ModLoader.Helpers.SceneHelper.OnHubSceneLoaded += CustomChallengesMod.UI.ShowGUI;
                 ModLoader.Helpers.SceneHelper.OnHubSceneUnloaded += CustomChallengesMod.UI.GUIInActive;
-                ModLoader.Helpers.SceneHelper.OnWorldSceneLoaded += CustomChallengesMod.UI.ShowGUI;
-                ModLoader.Helpers.SceneHelper.OnWorldSceneUnloaded += CustomChallengesMod.UI.GUIInActive;
             }
+            ModLoader.Helpers.SceneHelper.OnWorldSceneLoaded += CustomChallengesMod.UI.ShowGUI;
+            ModLoader.Helpers.SceneHelper.OnWorldSceneUnloaded += CustomChallengesMod.UI.GUIInActive;
         }
     }
 }

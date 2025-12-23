@@ -236,3 +236,27 @@ planet-relative units:
 * "a" - for atmosphere height altitude or distance (if the planet has no atmosphere will use a maximum of max terrain height and timewarp height)
 * "r" - for planetary radius altitude or distance
 * "s" - SOI multiple distance from center (values should be <1) - not useful for distances?
+
+## Settings
+
+The settings.txt file in the mod directory (C:\Program Files (x86)\Steam\steamapps\common\Spaceflight Simulator\Spaceflight Simulator Game\Mods\CustomChallengesMod on steam) looks like this:
+
+```
+{
+  "debug": false,
+  "windowPosition": {
+    "x": 915,
+    "y": 915
+  }
+}
+```
+
+This file should only be amended when SFS is not running.
+
+if "debug" is true: all challenges can be listed in the hub screen and the world scene and can be filtered by Complete or
+Incomplete challenges. Additionally on the World scene they can be filtered by in progress.
+
+if "debug" is false: only in progress challenges will be shown on the World scene.
+
+The step details for ''vanilla" steps will show only the step type, completion status or the encoded 'in progress' state. For custom
+steps, the parameters and any decoded 'in progress' state are shown.

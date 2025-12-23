@@ -91,21 +91,7 @@
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
             bool stepCompleted=false;
-            string[] stepProgress=new string[steps.Count];
-            bool anyProgress = false;
-
-            for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
-
-            if (!string.IsNullOrEmpty(progress))
-            {
-                string[] stepProgress_New=progress.Split(_delim, System.StringSplitOptions.None);
-
-                for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
-                {
-                    stepProgress[stepIndex]=stepProgress_New[stepIndex];
-                    if (!string.IsNullOrEmpty(stepProgress[stepIndex])) anyProgress=true;
-                }
-            }
+            string[] stepProgress=ParseProgress(progress);
 
             for (int stepIndex=0;stepIndex<steps.Count;stepIndex++)
             {
@@ -116,14 +102,15 @@
                 }
             }
 
-            if (anyProgress)
-            {
-                progress = string.Join(_delim[0],stepProgress);
-            }
-            else
+            if (stepCompleted)
             {
                 progress = null;
             }
+            else
+            {
+                progress = string.Join(_delim[0],stepProgress);
+            }
+
             return stepCompleted;
         }
 
@@ -178,35 +165,102 @@
             return string.Join(_delim[0],stepProgress);
         }
 
+        public string[] ParseProgress(string progress)
+        {
+            string[] stepProgress=new string[steps.Count];
+            for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
+
+            if (!string.IsNullOrEmpty(progress))
+            {
+                string[] stepProgress_New=progress.Split(_delim, System.StringSplitOptions.None);
+
+                for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
+                {
+                    stepProgress[stepIndex]=stepProgress_New[stepIndex];
+                }
+            }
+
+            return stepProgress;
+        }
+
         public override string ToString()
         {
             return ToStringExt();
         }
 
-        public string ToStringExt(int depth=1)
+        public string ToStringExt(int depth=1,string progress="")
         {
             System.Text.StringBuilder result = new System.Text.StringBuilder();
+            string[] progressArray= null;
+
             result.Append("Any");
 
-            int stepNo = 1;
-
-            foreach (SFS.Logs.ChallengeStep oneStep in steps)
+            if (!string.IsNullOrEmpty(progress))
             {
-                if (result.Length>0) result.AppendLine();
+                if (CustomChallengesMod.UI.Debug)
+                {
+                    result.AppendFormat(" (in progress \"{0}\")",progress);
+                }
+                else
+                {
+                    result.Append(" (in progress)");
+                }
+                progressArray=ParseProgress(progress);
+            }
+
+            for (int stepIndex = 0; stepIndex<steps.Count; stepIndex++)
+            {
+                SFS.Logs.ChallengeStep oneStep = steps[stepIndex];
+                string stepProgress="";
+                if (progressArray!=null && progressArray.Length>stepIndex) stepProgress=progressArray[stepIndex];
+
+                result.AppendLine();
 
                 for (int i=0;i<=depth;i++)  result.Append("... ");
 
                 if (oneStep is CustomChallengesMod.CustomSteps.Step_OneOf oneOneOfStep)
                 {
-                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneOneOfStep.ToStringExt(depth+1));
+                    if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneOneOfStep.ToStringExt(depth: depth+1,progress: stepProgress));
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneOneOfStep.ToStringExt(depth: depth+1));
+                    }
                 }
                 else if(oneStep is CustomChallengesMod.CustomSteps.Step_AllOf oneAllOfStep)
                 {
-                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneAllOfStep.ToStringExt(depth+1));
+                    if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneAllOfStep.ToStringExt(depth: depth+1, progress: stepProgress));
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneAllOfStep.ToStringExt(depth:depth+1));
+                    }
+                }
+                else if(oneStep is CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt oneAny_LandmarkStep)
+                {
+                    if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneAny_LandmarkStep.ToStringExt(progress:stepProgress));
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneStep);
+                    }
                 }
                 else
                 {
-                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneStep);
+                    if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1} (progress: \"{2}\"", stepIndex+1 , oneStep, stepProgress);
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneStep);
+                    }
                 }
             }
             return result.ToString();
@@ -224,21 +278,8 @@
 
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
-            string[] stepProgress=new string[steps.Count];
             bool stepCompleted=true;
-            bool anyProgress = false;
-
-            for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
-
-            if (!string.IsNullOrEmpty(progress))
-            {
-                string[] stepProgress_New=progress.Split(_delim, System.StringSplitOptions.None);
-                for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
-                {
-                    stepProgress[stepIndex]=stepProgress_New[stepIndex];
-                    if (!string.IsNullOrEmpty(stepProgress[stepIndex])) anyProgress=true;
-                }
-            }
+            string[] stepProgress=ParseProgress(progress);
 
             for (int stepIndex=0;stepIndex<steps.Count;stepIndex++)
             {
@@ -254,17 +295,18 @@
                         stepCompleted=false;
                     }
                 }
-                if (!string.IsNullOrEmpty(stepProgress[stepIndex])) anyProgress=true;
             }
-            if (anyProgress)
-            {
-                progress = string.Join(_delim[0],stepProgress);
-            }
-            else
+
+            if (stepCompleted)
             {
                 progress = null;
             }
-            return stepCompleted;
+            else
+            {
+                progress = string.Join(_delim[0],stepProgress);
+            }
+
+           return stepCompleted;
         }
 
         public bool My_IsEligible(SFS.WorldBase.Planet currentPlanet)
@@ -318,35 +360,125 @@
             return string.Join(_delim[0],stepProgress);
         }
 
+        public string[] ParseProgress(string progress)
+        {
+            string[] stepProgress=new string[steps.Count];
+            for (int stepIndex=0; stepIndex<stepProgress.Length; stepIndex++) stepProgress[stepIndex]="";
+
+            if (!string.IsNullOrEmpty(progress))
+            {
+                string[] stepProgress_New=progress.Split(_delim, System.StringSplitOptions.None);
+
+                for (int stepIndex=0; stepIndex<System.Math.Min(steps.Count,stepProgress_New.Length); stepIndex++)
+                {
+                    stepProgress[stepIndex]=stepProgress_New[stepIndex];
+                }
+            }
+
+            return stepProgress;
+        }
+
         public override string ToString()
         {
             return ToStringExt();
         }
 
-        public string ToStringExt(int depth=1)
+        public string ToStringExt(int depth=1,string progress="")
         {
             System.Text.StringBuilder result = new System.Text.StringBuilder();
+            string[] progressArray= null;
+
             result.Append("Multi");
 
-            int stepNo = 1;
-
-            foreach (SFS.Logs.ChallengeStep oneStep in steps)
+            if (!string.IsNullOrEmpty(progress))
             {
-                if (result.Length>0) result.AppendLine();
-
-                for (int i=0;i<=depth;i++) result.Append("... ");
-
-                if (oneStep is CustomChallengesMod.CustomSteps.Step_OneOf oneOneOfStep)
+                if (CustomChallengesMod.UI.Debug)
                 {
-                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneOneOfStep.ToStringExt(depth+1));
-                }
-                else if(oneStep is CustomChallengesMod.CustomSteps.Step_AllOf oneAllOfStep)
-                {
-                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneAllOfStep.ToStringExt(depth+1));
+                    result.AppendFormat(" (in progress \"{0}\")",progress);
                 }
                 else
                 {
-                    result.AppendFormat("{0:D}: {1}", stepNo++ , oneStep);
+                    result.Append(" (in progress)");
+                }
+                progressArray=ParseProgress(progress);
+            }
+
+            for (int stepIndex = 0; stepIndex<steps.Count; stepIndex++)
+            {
+                SFS.Logs.ChallengeStep oneStep = steps[stepIndex];
+                System.Text.StringBuilder prefix = new System.Text.StringBuilder();
+                string stepProgress="";
+
+                if (progressArray!=null && progressArray.Length>stepIndex) stepProgress=progressArray[stepIndex];
+
+                result.AppendLine();
+
+                for (int i=0;i<=depth;i++)  prefix.Append("... ");
+                result.Append(prefix.ToString());
+
+                if (oneStep is CustomChallengesMod.CustomSteps.Step_OneOf oneOneOfStep)
+                {
+                    if (stepProgress=="**")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneOneOfStep.ToStringExt(depth:depth+1));
+                        result.AppendLine();
+                        result.AppendFormat("{0} (complete)",prefix);
+                    }
+                    else if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneOneOfStep.ToStringExt(depth:depth+1,progress:stepProgress));
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneOneOfStep.ToStringExt(depth:depth+1));
+                    }
+                }
+                else if(oneStep is CustomChallengesMod.CustomSteps.Step_AllOf oneAllOfStep)
+                {
+                    if (stepProgress=="**")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneAllOfStep.ToStringExt(depth:depth+1));
+                        result.AppendLine();
+                        result.AppendFormat("{0} (complete)",prefix);
+                    }
+                    else if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneAllOfStep.ToStringExt(depth: depth+1,progress:stepProgress));
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneAllOfStep.ToStringExt(depth:depth+1));
+                    }
+                }
+                else if(oneStep is CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt oneAny_LandmarkStep)
+                {
+                    if (stepProgress=="**")
+                    {
+                        result.AppendFormat("{0:D}: {1} (complete)", stepIndex+1 , oneStep);
+                    }
+                    else if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneAny_LandmarkStep.ToStringExt(progress: stepProgress));
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneStep);
+                    }
+                }
+                else
+                {
+                    if (stepProgress=="**")
+                    {
+                        result.AppendFormat("{0:D}: {1} (complete)", stepIndex+1 , oneStep);
+                    }
+                    else if (stepProgress!="")
+                    {
+                        result.AppendFormat("{0:D}: {1} (progress: \"{2}\")", stepIndex+1 , oneStep, stepProgress);
+                    }
+                    else
+                    {
+                        result.AppendFormat("{0:D}: {1}", stepIndex+1 , oneStep);
+                    }
                 }
             }
             return result.ToString();
@@ -393,7 +525,8 @@
         {
             bool result = false;
 
-            if (!string.IsNullOrEmpty(progress)) progress= string.Join(",",progress.Split(_delim, System.StringSplitOptions.None));
+            if (!string.IsNullOrEmpty(progress)) progress= string.Join(",",ParseProgress(progress));
+
             result = base.IsCompleted(location,recorder,ref progress);
 
             if (!string.IsNullOrEmpty(progress)) progress= string.Join(_delim[0],progress.Split(','));
@@ -429,6 +562,11 @@
             return string.Join(_delim[0],progressA);
         }
 
+        public string[] ParseProgress(string progress)
+        {
+            return progress.Split(_delim, System.StringSplitOptions.None);
+        }
+
         public override string ToString()
         {
             System.Text.StringBuilder result = new System.Text.StringBuilder();
@@ -438,6 +576,29 @@
             if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
             if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
             if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
+            return result.ToString();
+        }
+
+        public string ToStringExt(string progress="")
+        {
+            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            result.Append("Any_Landmarks");
+            if (planet!=null) result.AppendFormat(", planet:\"{0}\"", planet.codeName);
+            result.AppendFormat(", count:{0}", count);
+            if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
+            if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
+            if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
+            if (progress!="")
+            {
+                string[] progressArray=ParseProgress(progress);
+                System.Text.StringBuilder formattedProgress = new System.Text.StringBuilder();
+                foreach(string value in progressArray)
+                {
+                    if (formattedProgress.Length>0) formattedProgress.Append(",");
+                    formattedProgress.AppendFormat("\"{0}\"", value);
+                }
+                result.AppendFormat(" (progress:{0})", formattedProgress);
+            };
             return result.ToString();
         }
     }

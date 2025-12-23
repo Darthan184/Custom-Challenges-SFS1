@@ -51,32 +51,61 @@ namespace CustomChallengesMod
                 UnityEngine.RectTransform canvas = UITools.UIUtility.CanvasRectTransform;
                 UnityEngine.Vector2 canvasSize = new UnityEngine.Vector2(canvas.rect.width * canvas.lossyScale.x, canvas.rect.height * canvas.lossyScale.y);
                 System.Text.StringBuilder display = new System.Text.StringBuilder();
+                System.Collections.Generic.Dictionary<SFS.Logs.Challenge, (int i, string progressData)> progress=null;
+                System.Collections.Generic.HashSet<string> completeChallenges=null;
+//~                 System.Collections.Generic.HashSet<SFS.Logs.Challenge> completeChallenges_Rocket=null;
 
                 if (_isOpen)
                 {
-                    SFS.World.Rocket rocket=null;
-                    System.Collections.Generic.Dictionary<SFS.Logs.Challenge, (int i, string progressData)> progress=null;
-                    System.Collections.Generic.HashSet<SFS.Logs.Challenge> completeChallenges=null;
                     if (scene=="World_PC")
                     {
-                        if (SFS.World.PlayerController.main.player.Value is SFS.World.Rocket)
+                        if (SFS.World.PlayerController.main.player.Value is SFS.World.Rocket rocket)
                         {
-                            rocket=(SFS.World.Rocket) SFS.World.PlayerController.main.player.Value;
+//~                             completeChallenges_Rocket= rocket.stats.challengeRecorder.GetCompleteChallenges();
+
                             progress= (System.Collections.Generic.Dictionary<SFS.Logs.Challenge, (int i, string progressData)>)
                                 typeof(SFS.Stats.ChallengeRecorder)
                                     .GetField("progress", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                                     .GetValue(rocket.stats.challengeRecorder);
-                            completeChallenges= rocket.stats.challengeRecorder.GetCompleteChallenges();
+
                         }
                     }
-                    else
+
+                    if (scene=="World_PC" || _debug)
                     {
-                        _filter="All";
+                        if
+                            (
+                                SFS.Base.worldBase!=null
+                                && SFS.Base.worldBase.paths!=null
+                                && SFS.Base.worldBase.paths.worldPersistentPath!=null
+                            )
+                        {
+                            SFS.IO.FilePath filePath = SFS.Base.worldBase.paths.worldPersistentPath.ExtendToFile("Challenges.txt");
+                            System.Collections.Generic.List<string> completeChallenges_List = new System.Collections.Generic.List<string>();
+
+                            if
+                                (
+                                    filePath.FileExists()
+                                    && SFS.Parsers.Json.JsonWrapper.TryLoadJson<System.Collections.Generic.List<string>>(filePath, out completeChallenges_List)
+                                )
+                            {
+                                completeChallenges = completeChallenges_List.ToHashSet();
+                            }
+                        }
                     }
+
+//~                     display.AppendFormat("completeChallenges.Count={0:D}",completeChallenges.Count).AppendLine();
+//~                     if (completeChallenges_Rocket!=null) display.AppendFormat("completeChallenges_Rocket.Count={0:D}",completeChallenges_Rocket.Count).AppendLine();
+
+                    if (!_debug) _filter="InProgress";
+                    if (progress==null && _filter=="InProgress") _filter="All";
+                    if (completeChallenges==null && _filter=="Complete") _filter="All";
+                    if (completeChallenges==null && _filter=="Incomplete") _filter="All";
 
                     foreach (SFS.Logs.Challenge oneChallenge in SFS.Base.worldBase.challengesArray)
                     {
                         bool isComplete=false;
+//~                         bool isComplete_Rocket=false;
                         int progressStepNo = 0;
                         string progressState = "";
 
@@ -87,10 +116,14 @@ namespace CustomChallengesMod
                                 progressStepNo=progress[oneChallenge].Item1+1;
                                 progressState=progress[oneChallenge].Item2;
                             }
-                            if (completeChallenges!=null && completeChallenges.Contains(oneChallenge))
+                            if (completeChallenges!=null && completeChallenges.Contains(oneChallenge.id))
                             {
                                 isComplete=true;
                             }
+//~                             if (completeChallenges_Rocket!=null && completeChallenges_Rocket.Contains(oneChallenge))
+//~                             {
+//~                                 isComplete_Rocket=true;
+//~                             }
                         }
 
                         if
@@ -135,34 +168,57 @@ namespace CustomChallengesMod
                                 {
                                     display.Append(", complete");
                                 }
+//~                                 if (isComplete_Rocket)
+//~                                 {
+//~                                     display.Append(", complete (rocket)");
+//~                                 }
                                 display.Append(")");
 
                                 foreach (SFS.Logs.ChallengeStep oneStep in oneChallenge.steps)
                                 {
                                     display.AppendLine();
-                                    display.AppendFormat("... {0:D}: {1}", stepNo, oneStep);
 
-                                    if
-                                        (
-                                            stepNo<=progressStepNo
-                                            &&
-                                            (
-                                                oneStep is CustomChallengesMod.CustomSteps.Step_AllOf
-                                                || oneStep is CustomChallengesMod.CustomSteps.Step_OneOf
-                                            )
-                                        )
+                                    if (oneStep is CustomChallengesMod.CustomSteps.Step_OneOf oneOneOfStep)
                                     {
-                                        display.AppendLine();
-                                        display.Append("... ");
-                                    }
+                                        display.AppendFormat("... {0:D}: {1}", stepNo, oneOneOfStep.ToStringExt(progress:progressState));
 
-                                    if (!string.IsNullOrEmpty(progressState) && stepNo==progressStepNo)
-                                    {
-                                        display.AppendFormat(" (progress \"{0}\")",progressState);
+                                        if ((string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo) && (stepNo<=progressStepNo))
+                                        {
+                                            display.AppendLine();
+                                            display.Append("... (complete)");
+                                        }
                                     }
-                                    else if (stepNo<=progressStepNo)
+                                    else if(oneStep is CustomChallengesMod.CustomSteps.Step_AllOf oneAllOfStep)
                                     {
-                                        display.Append(" (complete)");
+                                        display.AppendFormat("... {0:D}: {1}", stepNo, oneAllOfStep.ToStringExt(progress:progressState));
+
+                                        if ((string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo) && (stepNo<=progressStepNo))
+                                        {
+                                            display.AppendLine();
+                                            display.Append("... (complete)");
+                                        }
+                                    }
+                                    else if(oneStep is CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt oneAny_LandmarkStep)
+                                    {
+                                        display.AppendFormat("... {0:D}: {1}", stepNo, oneAny_LandmarkStep.ToStringExt(progress:progressState));
+
+                                        if ((string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo) && (stepNo<=progressStepNo))
+                                        {
+                                            display.Append(" (complete)");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        display.AppendFormat("... {0:D}: {1}", stepNo, oneStep);
+
+                                        if (!string.IsNullOrEmpty(progressState) && stepNo==progressStepNo)
+                                        {
+                                            display.AppendFormat(" (progress \"{0}\")",progressState);
+                                        }
+                                        else if (stepNo<=progressStepNo)
+                                        {
+                                            display.Append(" (complete)");
+                                        }
                                     }
                                     stepNo++;
                                 }
@@ -198,7 +254,7 @@ namespace CustomChallengesMod
                         ,draggable: true
                         ,savePosition: true
                         ,opacity: 0.95f
-                        ,titleText: _isOpen?"Custom Challenges Debug":"CC Debug"
+                        ,titleText: (_debug?(_isOpen?"Custom Challenges Debug":"CC Debug"):"Progress")
                     );
 
                 // Create a layout group for the window. This will tell the GUI builder how it should position elements of your UI.
@@ -215,19 +271,32 @@ namespace CustomChallengesMod
                 {
                     SFS.UI.ModGUI.Container buttons_Container =  SFS.UI.ModGUI.Builder.CreateContainer(_window);
                     buttons_Container.CreateLayoutGroup(SFS.UI.ModGUI.Type.Horizontal, UnityEngine.TextAnchor.MiddleCenter,5f);
-                    if (scene=="World_PC")
+
+                    if (_debug)
                     {
                         SFS.UI.ModGUI.Button all_Button=SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:DisplayAll, text: "All");
-                        SFS.UI.ModGUI.Button inProgress_Button=SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:DisplayInProgress, text: "In Progress");
-                        SFS.UI.ModGUI.Button complete_Button=SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:DisplayComplete, text: "Complete");
-                        SFS.UI.ModGUI.Button incomplete_Button=SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:DisplayIncomplete, text: "Incomplete");
+                        SFS.UI.ModGUI.Button inProgress_Button=null;
+                        SFS.UI.ModGUI.Button complete_Button=null;
+                        SFS.UI.ModGUI.Button incomplete_Button=null;
+
+                        if (progress!=null) inProgress_Button=SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:DisplayInProgress, text: "In Progress");
+                        if (completeChallenges!=null) complete_Button=SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:DisplayComplete, text: "Complete");
+                        if (completeChallenges!=null)  incomplete_Button=SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:DisplayIncomplete, text: "Incomplete");
 
                         switch (_filter)
                         {
                             case "All":all_Button.Text=all_Button.Text.ToUpper();break;
-                            case "InProgress":inProgress_Button.Text=inProgress_Button.Text.ToUpper();break;
-                            case "Complete":complete_Button.Text=complete_Button.Text.ToUpper();break;
-                            case "Incomplete":incomplete_Button.Text=incomplete_Button.Text.ToUpper();break;
+                            case "InProgress":
+                                if (inProgress_Button!=null) inProgress_Button.Text=inProgress_Button.Text.ToUpper();
+                            break;
+
+                            case "Complete":
+                                if (complete_Button!=null) complete_Button.Text=complete_Button.Text.ToUpper();
+                            break;
+
+                            case "Incomplete":
+                                if (incomplete_Button!=null) incomplete_Button.Text=incomplete_Button.Text.ToUpper();
+                            break;
                         }
                     }
                     SFS.UI.ModGUI.Builder.CreateButton(buttons_Container, 150, 30,onClick:Hide, text: "Hide");
@@ -284,7 +353,7 @@ namespace CustomChallengesMod
                 }
             }
 
-            /// <summary>The current filter: "All", "InProgress"</summary>
+            /// <summary>The current filter: "All", "InProgress", "Complete", "Incomplete"</summary>
             public static string Filter
             {
                 get
@@ -293,9 +362,15 @@ namespace CustomChallengesMod
                 }
                 set
                 {
-                    if (value!= _filter)
+                    if (value.ToLower()!= _filter.ToLower())
                     {
-                        _filter=value;
+                        switch (value.ToLower())
+                        {
+                            case "inprogress": _filter="InProgress";break;
+                            case "complete": _filter="Complete";break;
+                            case "incomplete": _filter="Incomplete";break;
+                            default: _filter="All";break;
+                        }
                         Display();
                     }
                 }
