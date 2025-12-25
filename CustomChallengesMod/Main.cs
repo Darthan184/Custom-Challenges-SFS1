@@ -40,6 +40,8 @@
         public override void Load()
         {
             CustomChallengesMod.SettingsManager.Load();
+            UnityEngine.GameObject.DontDestroyOnLoad((new UnityEngine.GameObject("Custom Challenges-UI").AddComponent<CustomChallengesMod.UI>()).gameObject);
+
             if (CustomChallengesMod.SettingsManager.settings.debug)
             {
                 ModLoader.Helpers.SceneHelper.OnHubSceneLoaded += CustomChallengesMod.UI.ShowGUI;
