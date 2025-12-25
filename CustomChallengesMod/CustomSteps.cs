@@ -58,6 +58,14 @@
         public double minHeight=double.NaN;
         public double minMass=double.NaN;
 
+        public static CustomChallengesMod.CustomSteps.Step_HeightExt Create(SFS.Logs.Step_Height oneStep)
+        {
+            CustomChallengesMod.CustomSteps.Step_HeightExt result=new CustomChallengesMod.CustomSteps.Step_HeightExt();
+            result.planet = oneStep.planet;
+            result.minHeight = oneStep.height;
+            return result;
+        }
+
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string _)
         {
             if (!double.IsNaN(maxHeight) && location.Height > maxHeight) return false;
@@ -271,7 +279,39 @@
     public class Step_AllOf : SFS.Logs.ChallengeStep
     {
         public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
-        private string [] _delim = new string[]{"|b"};
+        private string [] _delim = new string[]{"|a"};
+
+        public static CustomChallengesMod.CustomSteps.Step_AllOf Create(SFS.Logs.MultiStep oneStep)
+        {
+            CustomChallengesMod.CustomSteps.Step_AllOf result=new CustomChallengesMod.CustomSteps.Step_AllOf();
+            result.Depth = 0;
+            result.steps = new  System.Collections.Generic.List<SFS.Logs.ChallengeStep>();
+
+            foreach (SFS.Logs.ChallengeStep oneSubStep in oneStep.steps)
+            {
+                if (oneSubStep is SFS.Logs.Step_Downrange oneStep_Downrange)
+                {
+                    result.steps.Add(CustomChallengesMod.CustomSteps.Step_Downrange.Create(oneStep_Downrange));
+                }
+                else if (oneSubStep is SFS.Logs.Step_Height oneStep_Height)
+                {
+                    result.steps.Add(CustomChallengesMod.CustomSteps.Step_HeightExt.Create(oneStep_Height));
+                }
+                else if (oneSubStep is SFS.Logs.Step_Impact oneStep_Impact)
+                {
+                    result.steps.Add(CustomChallengesMod.CustomSteps.Step_Impact.Create(oneStep_Impact));
+                }
+                else if (oneSubStep is SFS.Logs.Step_Land oneStep_Land)
+                {
+                    result.steps.Add(CustomChallengesMod.CustomSteps.Step_LandExt.Create(oneStep_Land));
+                }
+                else if (oneSubStep is SFS.Logs.Step_Orbit oneStep_Orbit)
+                {
+                    result.steps.Add(CustomChallengesMod.CustomSteps.Step_OrbitExt.Create(oneStep_Orbit));
+                }
+            }
+            return result;
+        }
 
         public int Depth
         { get { return (int)(_delim[0][1])-(int)'a'; } set { _delim[0]="|"+(char)((int)'a'+value);} }
@@ -492,6 +532,13 @@
         public double maxMass=double.NaN;
         public double minMass=double.NaN;
 
+        public static CustomChallengesMod.CustomSteps.Step_LandExt Create(SFS.Logs.Step_Land oneStep)
+        {
+            CustomChallengesMod.CustomSteps.Step_LandExt result=new CustomChallengesMod.CustomSteps.Step_LandExt();
+            result.planet = oneStep.planet;
+            return result;
+        }
+
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
             if (!base.IsCompleted(location,recorder,ref progress)) return false;
@@ -513,10 +560,18 @@
     /// <summary>Data for one extended any landmarks step</summary>
     public class Step_Any_LandmarksExt : SFS.Logs.Step_Any_Landmarks
     {
-        private string [] _delim = new string[]{"|c"};
+        private string [] _delim = new string[]{"|a"};
         public bool? hasEngines=null;
         public double maxMass=double.NaN;
         public double minMass=double.NaN;
+
+        public static CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt Create(SFS.Logs.Step_Any_Landmarks oneStep)
+        {
+            CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt result=new CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt();
+            result.planet = oneStep.planet;
+            result.count = oneStep.count;
+            return result;
+        }
 
         public int Depth
         { get { return (int)(_delim[0][1])-(int)'a'; } set { _delim[0]="|"+(char)((int)'a'+value);} }
@@ -666,6 +721,14 @@
         public double minMass=double.NaN;
         public double maxMass=double.NaN;
 
+        public static CustomChallengesMod.CustomSteps.Step_OrbitExt Create(SFS.Logs.Step_Orbit oneStep)
+        {
+            CustomChallengesMod.CustomSteps.Step_OrbitExt result=new CustomChallengesMod.CustomSteps.Step_OrbitExt();
+            result.planet = oneStep.planet;
+            result.orbit = oneStep.orbit;
+            return result;
+        }
+
         public override bool IsCompleted(SFS.World.Location location, SFS.Stats.StatsRecorder recorder, ref string progress)
         {
             if (orbit==SFS.Stats.StatsRecorder.Tracker.State_Orbit.Esc && location.planet.SOI==double.PositiveInfinity)
@@ -697,6 +760,14 @@
     /// <summary>Data for downrange challenge step</summary>
     public class Step_Downrange : SFS.Logs.Step_Downrange
     {
+        public static CustomChallengesMod.CustomSteps.Step_Downrange Create(SFS.Logs.Step_Downrange oneStep)
+        {
+            CustomChallengesMod.CustomSteps.Step_Downrange result=new CustomChallengesMod.CustomSteps.Step_Downrange();
+            result.planet = oneStep.planet;
+            result.downrange = oneStep.downrange;
+            return result;
+        }
+
         public override string ToString()
         {
             System.Text.StringBuilder result = new System.Text.StringBuilder();
@@ -710,6 +781,14 @@
     /// <summary>Data for impact challenge step</summary>
     public class Step_Impact : SFS.Logs.Step_Impact
     {
+        public static CustomChallengesMod.CustomSteps.Step_Impact Create(SFS.Logs.Step_Impact oneStep)
+        {
+            CustomChallengesMod.CustomSteps.Step_Impact result=new CustomChallengesMod.CustomSteps.Step_Impact();
+            result.planet = oneStep.planet;
+            result.impactVelocity = oneStep.impactVelocity;
+            return result;
+        }
+
         public override string ToString()
         {
             System.Text.StringBuilder result = new System.Text.StringBuilder();

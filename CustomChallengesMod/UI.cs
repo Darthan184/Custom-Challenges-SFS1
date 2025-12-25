@@ -391,12 +391,14 @@ namespace CustomChallengesMod
 
             private void Refresh1()
             {
-                Display();
+                string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+                if (_isActive && scene!="World_PC") Display();
             }
 
             private void Start()
             {
-                base.Invoke("Refresh1", 0.25f);
+                base.Invoke("Refresh1", 1f);
                 base.InvokeRepeating("Refresh", UnityEngine.Random.Range(0.5f, 1.5f), 1f);
             }
 

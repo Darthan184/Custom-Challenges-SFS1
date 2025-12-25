@@ -463,7 +463,51 @@ namespace CustomChallengesMod
                 traceID="T-02";
 
                 // populate dictionary for existing challenges
-                foreach (SFS.Logs.Challenge oneChallenge in  __result) challengesById[oneChallenge.id]=oneChallenge;
+                foreach (SFS.Logs.Challenge oneChallenge in  __result)
+                {
+                    if (oneChallenge.steps.Count>0)
+                    {
+                        for (int stepIndex=0;stepIndex<oneChallenge.steps.Count; stepIndex++)
+                        {
+                            if (oneChallenge.steps[stepIndex] is SFS.Logs.MultiStep oneMultiStep)
+                            {
+                                oneChallenge.steps[stepIndex] = CustomChallengesMod.CustomSteps.Step_AllOf.Create(oneMultiStep);
+                            }
+                            else if (oneChallenge.steps[stepIndex] is SFS.Logs.Step_Any_Landmarks oneStep_Any_Landmarks)
+                            {
+                                oneChallenge.steps[stepIndex] = CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt.Create(oneStep_Any_Landmarks);
+                            }
+                            else if (oneChallenge.steps[stepIndex] is SFS.Logs.Step_Downrange oneStep_Downrange)
+                            {
+                                oneChallenge.steps[stepIndex] = CustomChallengesMod.CustomSteps.Step_Downrange.Create(oneStep_Downrange);
+                            }
+                            else if (oneChallenge.steps[stepIndex] is SFS.Logs.Step_Height oneStep_Height)
+                            {
+                                oneChallenge.steps[stepIndex] = CustomChallengesMod.CustomSteps.Step_HeightExt.Create(oneStep_Height);
+                            }
+                            else if (oneChallenge.steps[stepIndex] is SFS.Logs.Step_Impact oneStep_Impact)
+                            {
+                                oneChallenge.steps[stepIndex] = CustomChallengesMod.CustomSteps.Step_Impact.Create(oneStep_Impact);
+                            }
+                            else if (oneChallenge.steps[stepIndex] is SFS.Logs.Step_Land oneStep_Land)
+                            {
+                                oneChallenge.steps[stepIndex] = CustomChallengesMod.CustomSteps.Step_LandExt.Create(oneStep_Land);
+                            }
+                            else if (oneChallenge.steps[stepIndex] is SFS.Logs.Step_Orbit oneStep_Orbit)
+                            {
+                                oneChallenge.steps[stepIndex] = CustomChallengesMod.CustomSteps.Step_OrbitExt.Create(oneStep_Orbit);
+                            }
+                        }
+                    }
+
+                    if (oneChallenge.returnSafely && oneChallenge.steps.Count==1)
+                    {
+                        CustomChallengesMod.CustomSteps.Step_LandExt landingStep=new CustomChallengesMod.CustomSteps.Step_LandExt();
+                        landingStep.planet = SFS.Base.planetLoader.spaceCenter.Planet;
+                        oneChallenge.steps.Add(landingStep);
+                    }
+                    challengesById[oneChallenge.id]=oneChallenge;
+                }
 
                 traceID="T-03";
 
