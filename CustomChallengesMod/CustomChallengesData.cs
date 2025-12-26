@@ -16,11 +16,53 @@
     [System.Serializable]
     public class CustomChallengesData
     {
+        /// <summary>Filter information to be used when multiple planets can be selected by one custom challenge or step</summary>
+        [System.Serializable]
+        public class FilterInfo
+        {
+            /// <summary>Only include if the planet 'is significant' flag has this value, if omitted, is not checked</summary>
+            public bool? isSignificant=null;
+
+            /// <summary>Only include if the planet 'has terrain' flag has this value, if omitted, is not checked</summary>
+            public bool? hasTerrain=null;
+
+            /// <summary>Only include if the planet 'logs landed' flag has this value, if omitted, is not checked</summary>
+            public bool? logsLanded=null;
+
+            /// <summary>Only include if the planet 'logs takeoff' flag has this value, if omitted, is not checked</summary>
+            public bool? logsTakeoff=null;
+
+            /// <summary>Only include if the planet 'logs atmosphere' flag has this value, if omitted, is not checked</summary>
+            public bool? logsAtmosphere=null;
+
+            /// <summary>Only include if the planet 'logs orbit' flag has this value, if omitted, is not checked</summary>
+            public bool? logsOrbit=null;
+
+            /// <summary>Only include if the planet 'logs crash' flag has this value, if omitted, is not checked</summary>
+            public bool? logsCrash=null;
+
+            /// <summary>Exclude planets with these names, if omitted, no planets are excluded by name</summary>
+            public string[] exclude=null;
+
+            /// <summary>
+            /// Only include planets with a primary having these names, if omitted, primaries are not checked
+            /// Suffix a name with * to indicate any primary in the chain of primaries. e.g "Proxima Centauri*" indicates any body
+            /// in the "Proxima Centauri" system
+            /// </summary>
+            public string[] primaries=null;
+        }
+
+        /// <summary>Information for one step</summary>
         [System.Serializable]
         public class Step
         {
             /// <summary>The name of the planet where this step is to be accomplished, not used for stepType="Multi" or "Any"</summary>
             public string planetName="";
+
+            /// <summary>
+            /// filter to be used if the planetName is "{sat}".
+            ///</summary>
+            public CustomChallengesMod.CustomChallengesData.FilterInfo filter = null;
 
             /// <summary>
             /// The type of step. Possible values:
@@ -131,6 +173,11 @@
         /// challenges. N.B. is case-sensitive.
         ///</summary>
         public string id = "";
+
+        /// <summary>
+        /// filter to be used if the id contains "{planet}".
+        ///</summary>
+        public CustomChallengesMod.CustomChallengesData.FilterInfo filter = null;
 
         /// <summary>
         /// indicates which of the icons should be used, omit or leave blank to indicate that an existing challenges should be

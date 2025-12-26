@@ -92,7 +92,10 @@ namespace CustomChallengesMod
                         if (completeChallenges==null && _filter=="Complete") _filter="All";
                         if (completeChallenges==null && _filter=="Incomplete") _filter="All";
 
-                        foreach (SFS.Logs.Challenge oneChallenge in SFS.Base.worldBase.challengesArray)
+                        System.Collections.Generic.List<SFS.Logs.Challenge> challenges = new System.Collections.Generic.List<SFS.Logs.Challenge> (SFS.Base.worldBase.challengesArray);
+                        challenges.Sort((SFS.Logs.Challenge a, SFS.Logs.Challenge b) => a.id.CompareTo(b.id));
+
+                        foreach (SFS.Logs.Challenge oneChallenge in challenges)
                         {
                             bool isComplete=false;
     //~                         bool isComplete_Rocket=false;
@@ -398,8 +401,10 @@ namespace CustomChallengesMod
 
             private void Start()
             {
-                base.Invoke("Refresh1", 1f);
                 base.InvokeRepeating("Refresh", UnityEngine.Random.Range(0.5f, 1.5f), 1f);
+                base.Invoke("Refresh1", 0.25f);
+                base.Invoke("Refresh1", 1f);
+                base.Invoke("Refresh1", 2f);
             }
 
             /// <summary>Show the GUI</summary>

@@ -1,13 +1,19 @@
 # Custom-Challenges-SFS1
-The mod adds support for custom challenges to custom solar systems. N.B the challenge system in SFS is a bit buggy. It sometimes fails to detect when a condition is matched and sometimes forgets progress for a multi-step challenge. I've noted the bugs I've come across but you may need to test that a challenge works.
+The mod adds support for custom challenges to custom solar systems. In addition it:
 
-To specify custom challenges you need to add a Custom_Challenges.txt file and possibly a Custom_Challenge_Icons directory if you want to add your own challenge icons:
+* displays 'in progress' challenges with step information in a closable window in the world scene.
+* for vanilla challenges 'return safely' adds a step for 'land on home world' (world with initial launch pad) even when the homeworld is not 'Earth'.
+* for custom challenges 'return safely' will not automatically add a 'land on home world' step, you are free to add a step for a different world to land on (and recover) or not add a land step (in which case you can recover on any world). N.B. in order to be able recover on a world other than the homeword, you will need the [Multi Launchpad mod](https://github.com/Darthan184/Multi-Launchpad-SFS1/releases) and select the launchpad to the world to recover on before landing.
+
+N.B the challenge system in SFS is a bit buggy. It sometimes fails to detect when a condition is matched and sometimes forgets progress for a multi-step challenge. I've noted the bugs I've come across but you may need to test that a challenge works.
+
+To specify custom challenges you need to add a Custom\_Challenges.txt file and possibly a Custom\_Challenge\_Icons directory if you want to add your own challenge icons:
 
 ![File Directory](images/directory.png)
 
-The file is a JSON array of challenge definitions each of which also contains a JSON array of steps of various types to be completed in the specified order. The is also a special step type - "Multi" - that contains an array of steps that may be completed in any order.
+The file is a JSON array of challenge definitions each of which also contains a JSON array of steps of various types to be completed in the specified order. There are also two special step type - "Multi" - that contains an array of steps that may be completed in any order and "Any" that contains an array of steps any or which may be completed.
 
-An example of a Custom_Challenges.txt. Note Custom_Challenges.txt in the CC_SampleWorld  file gives more examples:
+An example of a Custom\_Challenges.txt. Note Custom\_Challenges.txt in the CC\_SampleWorld  file gives more examples:
 
 ```
 [
@@ -87,55 +93,98 @@ _Challenge_
 * The identifier for this challenge. Land and return challenges should start with "Land_" for consistency with standard challenges. N.B. is case-sensitive.
 * If the same id as a vanilla challenge is supplied: this challenge will replace the vanilla challenge.
 * If only the id field is supplied and it is same id as a vanilla challenge: the vanilla challenge will be removed (for this world only).
+* If the id contains "{planet}" the as challenge for every planet that matches the supplied filter will be created and have an ownerName of the planet name.
 * vanilla challenge ids:
-    * Liftoff_0
-    * Reach_10km
-    * Reach_30km
-    * Reach_Downrange
-    * Reach_Orbit
-    * Orbit_High
-    * Moon_Orbit
-    * Moon_Tour
-    * Asteroid_Crash
-    * Mars_Tour
-    * Venus_One_Way
-    * Venus_Landing
-    * Mercury_One_Way
-    * Mercury_Landing
-    * Land_{planet name} Where {planet name} is the name of a planet for other land and return safely challenges. N.B. Only these challenges are automatically created for custom systems by SFS.
+    * Liftoff\_0
+    * Reach\_10km
+    * Reach\_30km
+    * Reach\_Downrange
+    * Reach\_Orbit
+    * Orbit\_High
+    * Moon\_Orbit
+    * Moon\_Tour
+    * Asteroid\_Crash
+    * Mars\_Tour
+    * Venus\_One\_Way
+    * Venus\_Landing
+    * Mercury\_One\_Way
+    * Mercury\_Landing
+    * Land\_{planet name} Where {planet name} is the name of a planet for other land and return safely challenges. N.B. Only these challenges are automatically created for custom systems by SFS.
 
 "icon" : {string value} (default "")
 * indicates which of the icons should be used, omit or leave blank to indicate that an existing challenge should be deleted. If suffixed with '.png' will load a file from Custom_Challenge_Icons/ . Otherwise a standard SFS Icon will be used, one of:
-*  "firstFlight", "10Km", "30Km", "50Km", "Downrange", "Reach_Orbit", "Orbit_High", "Capture", "Tour", "Crash","Land_One_Way", "Land_Return"
+*  "firstFlight", "10Km", "30Km", "50Km", "Downrange", "Reach\_Orbit", "Orbit\_High", "Capture", "Tour", "Crash","Land\_One\_Way", "Land\_Return"
 
 "difficulty" : {string value} (default "all")
 *  The difficulty mode that this challenge is enabled for: "all", "normal", "hard", "realistic"
+
+"filter" : {object with filter information} (default no filter used)
+* Fillter to be used if the id contains "{planet}". Ignored unless the id contains "{planet}"
 
 "priority" : {int value} (default 0)
 * indicates how to sort this challenge, is a small signed integer, higher numbers appear at the top of the list.
 
 "title" : {string value} (required if icon is supplied)
-* The title to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string like \[\[3A\]\] or \[\[0.5R:Moon\]\] , specifying planet-relative units will be replaced with a value in m, km, Mm, Gm, Tm or ly. The planet defaults to the one in ownerName
+* The title to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string like \[\[3A\]\] or \[\[0.5R:Moon\]\] , specifying planet-relative units will be replaced with a value in m, km, Mm, Gm, Tm or ly. The planet defaults to the one in ownerName. A sub-string of "{planet}" will be replaced by the planet neam if the id contains "{planet}".
 
 "description" : {string value} (required if icon is supplied)
-* The description to be used, N.B. not automatically translated (the in-game ones are translated).
+* The description to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string of "{planet}" will be replaced by the planet neam if the id contains "{planet}".
 
-"ownerName" : {string value} (required if icon is supplied)
+"ownerName" : {string value} (required if icon is supplied and the id does not contain "{planet}")
 * The name of the planet that is the 'owner' of this challenge. This specifies the planet the challenge appears under.
 
 "challengeDifficulty" : {string value} (required if icon is supplied)
 * The challenge difficulty indicator to be used (will be translated). Possible values: Easy, Medium, Hard, Extreme
 
 "returnSafely" : {bool value} (default false)
-* Indicates that return safely is needed. If true, and the custom system includes a planet called 'Earth', a land on Earth step will be added as the end.  It also seems to indicate that the completed challenge should appears in the challenge log when the rocket is recovered and may indicate that the challenge should only be recorded once recovered. You will have to experiment with this. If false the challenge completed message appears as soon as the criteria at met, and the challanges completiong is recorded at the same time.
+* Indicates that return safely is needed. Indicates that the completed challenge should appear in the challenge log when the rocket is recovered and may indicate that the challenge should only be recorded once recovered. You will have to experiment with this. If false the challenge completed message appears as soon as the criteria at met, and the challanges completiong is recorded at the same time.
 
 "steps" : {array of step values} (default null)
 * The steps needed to complete this challenge in the order they need to be accomplished in. N.B. all the pre-defined challenges only specify one step - the 'Tour' challenges use special 'multi step' types that indicates they can be done in any order - these are all buggy. "returnSafely" is used to indicate a 'Land on Earth' step is expected at the end. I haven't spotted SFS forgetting the progress for multiple (sequential) steps, but the vanilla challenges have a maximum of two steps with the second being 'Land on Earth'.
+
+
+_Filter_
+(all filter criteria must match)
+
+"isSignificant" : {bool value} (ignored if null)
+* Only include if the planet 'is significant' flag has this value, if omitted, is not checked
+
+"hasTerrain" : {bool value} (ignored if null)
+* Only include if the planet 'has terrain' flag has this value, if omitted, is not checked
+
+"logsLanded" : {bool value} (ignored if null)
+* Only include if the planet 'logs landed' flag has this value, if omitted, is not checked
+
+"logsTakeoff" : {bool value} (ignored if null)
+* Only include if the planet 'logs takeoff' flag has this value, if omitted, is not checked
+
+"logsAtmosphere" : {bool value} (ignored if null)
+* Only include if the planet 'logs atmosphere' flag has this value, if omitted, is not checked
+
+"logsOrbit" : {bool value} (ignored if null)
+* Only include if the planet 'logs orbit' flag has this value, if omitted, is not checked
+
+"logsCrash" : {bool value} (ignored if null)
+* Only include if the planet 'logs crash' flag has this value, if omitted, is not checked
+
+"exclude" : {string array value} (ignored if null)
+* Exclude planets with these names, if omitted, no planets are excluded by name
+
+"primaries" : {string array value} (ignored if null)
+* Only include planets with a primary having these names, if omitted, primaries are not checked. Suffix a name with * to indicate any primary in the chain of primaries. e.g "Proxima Centauri*" indicates any body in the "Proxima Centauri" system
+
 
 _Step_
 
 "planetName" : {string value} (required)
 * The name of the planet where this step is to be accomplished, not used for stepType="Multi" or "Any"
+* the following special values may be used
+    * "{sat}" generate a step for every satellite of the challenge owner
+    * "{planet}" the challenge owner
+    * "{primary}" the primary of the challenge owner
+
+"filter" : {object with filter information} (default no filter used)
+* Filter to be used if the planetName is "{sat}". Ignored unless the planetName is "{sat}", not used for stepType="Multi" or "Any"
 
 "stepType" : {string value} (required)
 * The type of step. Possible values:
@@ -253,10 +302,8 @@ The settings.txt file in the mod directory (C:\Program Files (x86)\Steam\steamap
 
 This file should only be amended when SFS is not running.
 
-if "debug" is true: all challenges can be listed in the hub screen and the world scene and can be filtered by Complete or
+if "debug" is true: all challenges and steps can be listed in the hub screen and the world scene and can be filtered by Complete or
 Incomplete challenges. Additionally on the World scene they can be filtered by in progress.
 
-if "debug" is false: only in progress challenges will be shown on the World scene.
+if "debug" is false: only in progress challenges and steps will be shown on the World scene.
 
-The step details for ''vanilla" steps will show only the step type, completion status or the encoded 'in progress' state. For custom
-steps, the parameters and any decoded 'in progress' state are shown.

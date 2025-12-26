@@ -178,17 +178,172 @@ namespace CustomChallengesMod
             return output.ToString();
         }
 
-        /// <summary>Get the challenge steps from the supplies values</summary>
+        /// <summary>Get the data for one challenge</summary>
+        private static _ChallengeIntermediate GetChallenge
+            (
+                string systemName
+                ,CustomChallengesMod.CustomChallengesData oneInputChallenge
+                ,int sequenceNo
+                ,SFS.WorldBase.Planet planet=null
+            )
+        {
+            _ChallengeIntermediate oneOutputChallenge=new _ChallengeIntermediate();
+
+            if (planet==null)
+            {
+                oneOutputChallenge.id=oneInputChallenge.id.Trim();
+
+                if (oneInputChallenge.ownerName.Trim()=="")
+                {
+                    throw new _InternalException
+                    (
+                        string.Format
+                            (
+                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing ownerName field"
+                                ,systemName
+                                ,oneOutputChallenge.id
+                            )
+                    );
+                }
+
+                if (!SFS.Base.planetLoader.planets.ContainsKey(oneInputChallenge.ownerName.Trim()))
+                {
+                    throw new _InternalException
+                    (
+                        string.Format
+                            (
+                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an ownerName field referring to a non-existent planet \"{2}\""
+                                ,systemName
+                                ,oneOutputChallenge.id
+                                ,oneInputChallenge.ownerName.Trim()
+                            )
+                    );
+                }
+                oneOutputChallenge.owner=SFS.Base.planetLoader.planets[oneInputChallenge.ownerName.Trim()];
+            }
+            else
+            {
+                oneOutputChallenge.id=oneInputChallenge.id.Trim().Replace("{planet}", planet.codeName);
+                oneOutputChallenge.owner=planet;
+            }
+
+            oneOutputChallenge.displayPriority=(100*oneInputChallenge.priority - sequenceNo);
+
+            if (oneInputChallenge.title.Trim()=="")
+            {
+                throw new _InternalException
+                    (
+                        string.Format
+                            (
+                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing title field"
+                                ,systemName
+                                ,oneInputChallenge.id
+                            )
+                    );
+            }
+
+            string title=ExpandDistances
+                (
+                    oneOutputChallenge.owner
+                    ,systemName
+                    ,oneInputChallenge.id
+                    ,"title"
+                    ,oneInputChallenge.title
+                );
+
+            if (planet!=null) title=title.Replace("{planet}", planet.codeName);
+            oneOutputChallenge.title=new System.Func<string>(() => title);
+
+            if (oneInputChallenge.description.Trim()=="")
+            {
+                throw new _InternalException
+                    (
+                        string.Format
+                            (
+                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1}  has a missing description field"
+                                ,systemName
+                                ,oneInputChallenge.id
+                            )
+                    );
+            }
+
+            string description=ExpandDistances
+                (
+                    oneOutputChallenge.owner
+                    ,systemName
+                    ,oneInputChallenge.id
+                    ,"description"
+                    ,oneInputChallenge.description
+                );
+
+            if (planet!=null) description=description.Replace("{planet}", planet.codeName);
+            oneOutputChallenge.description=new System.Func<string>(() => description);
+
+            switch (oneInputChallenge.challengeDifficulty.ToLower().Trim())
+            {
+                case "easy":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Easy;break;
+                case "medium":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Medium;break;
+                case "hard":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Hard;break;
+                case "extreme":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Extreme;break;
+                case "":
+                    throw new _InternalException
+                        (
+                            string.Format
+                                (
+                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing difficulty field"
+                                    ,systemName
+                                    ,oneInputChallenge.id
+                                )
+                        );
+                default:
+                    throw new _InternalException
+                        (
+                            string.Format
+                                (
+                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid difficulty field: \"{2}\""
+                                    ,systemName
+                                    ,oneInputChallenge.id
+                                    ,oneInputChallenge.difficulty
+                                )
+                        );
+            }
+
+            oneOutputChallenge.returnSafely = oneInputChallenge.returnSafely;
+            oneOutputChallenge.steps = GetSteps(systemName,oneInputChallenge.id,oneInputChallenge.steps,oneOutputChallenge.owner);
+            return oneOutputChallenge;
+        }
+
+        /// <summary>Get the challenge steps from the supplied values</summary>
         private static System.Collections.Generic.List<SFS.Logs.ChallengeStep>
-            GetSteps(string systemName, string id, CustomChallengesMod.CustomChallengesData.Step[] inputSteps, int depth=0)
+            GetSteps
+                (
+                    string systemName
+                    ,string id
+                    ,System.Collections.Generic.IEnumerable<CustomChallengesMod.CustomChallengesData.Step> inputSteps
+                    ,SFS.WorldBase.Planet owner
+                    ,int depth=0
+                )
         {
             System.Collections.Generic.List<SFS.Logs.ChallengeStep> outputSteps = new System.Collections.Generic.List<SFS.Logs.ChallengeStep>();
             int stepCount = 1;
 
             foreach (CustomChallengesMod.CustomChallengesData.Step oneInputStep in inputSteps)
             {
-                SFS.WorldBase.Planet planet=null;
+                System.Collections.Generic.List<SFS.WorldBase.Planet> planets=new System.Collections.Generic.List<SFS.WorldBase.Planet>();
                 string stepID = string.Format("{0}/{1:D}", id, stepCount++);
+
+                if (oneInputStep.stepType.Trim()=="")
+                {
+                    throw new _InternalException
+                    (
+                        string.Format
+                            (
+                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing stepType field"
+                                , systemName
+                                , stepID
+                            )
+                    );
+                }
 
                 if (oneInputStep.stepType.ToLower().Trim() != "multi" && oneInputStep.stepType.ToLower().Trim() != "any")
                 {
@@ -205,33 +360,77 @@ namespace CustomChallengesMod
                         );
                     }
 
-                    if (!SFS.Base.planetLoader.planets.ContainsKey(oneInputStep.planetName.Trim()))
+                    switch(oneInputStep.planetName.Trim())
                     {
-                        throw new _InternalException
-                        (
-                            string.Format
+                        case "{planet}": planets.Add(owner); break;
+                        case "{primary}":
+                        {
+                            if (owner.parentBody!=null)
+                            {
+                                planets.Add(owner.parentBody);
+                            }
+                            else
+                            {
+                                throw new _InternalException
                                 (
-                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an planetName field referring to a non-existent planet \"{2}\""
-                                    ,systemName
-                                    , stepID
-                                    ,oneInputStep.planetName.Trim()
-                                )
-                        );
-                    }
-                    planet=SFS.Base.planetLoader.planets[oneInputStep.planetName.Trim()];
-                }
+                                    string.Format
+                                        (
+                                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a planetName field of \"{{primary}}\" but \"{2}\" does not have a primary"
+                                            ,systemName
+                                            , stepID
+                                            ,owner.codeName
+                                        )
+                                );
+                            }
+                        }
+                        break;
 
-                if (oneInputStep.stepType.Trim()=="")
-                {
-                    throw new _InternalException
-                    (
-                        string.Format
-                            (
-                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing stepType field"
-                                , systemName
-                                , stepID
-                            )
-                    );
+                        case "{sat}":
+                        {
+                            if (owner.satellites!=null && owner.satellites.Length>0)
+                            {
+                                foreach (SFS.WorldBase.Planet oneSatellite in owner.satellites)
+                                    if (MatchesFilter(oneSatellite,oneInputStep.filter))
+                                    {
+                                        planets.Add(oneSatellite);
+                                    }
+                            }
+                            else
+                            {
+                                throw new _InternalException
+                                (
+                                    string.Format
+                                        (
+                                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a planetName field of \"{{sat}}\" but \"{2}\" does not have any satellites"
+                                            ,systemName
+                                            , stepID
+                                            ,owner.codeName
+                                        )
+                                );
+                            }
+                        }
+                        break;
+
+                        default:
+                        {
+                            if (!SFS.Base.planetLoader.planets.ContainsKey(oneInputStep.planetName.Trim()))
+                            {
+                                throw new _InternalException
+                                (
+                                    string.Format
+                                        (
+                                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a planetName field referring to a non-existent planet \"{2}\""
+                                            ,systemName
+                                            , stepID
+                                            ,oneInputStep.planetName.Trim()
+                                        )
+                                );
+                            }
+
+                            planets.Add(SFS.Base.planetLoader.planets[oneInputStep.planetName.Trim()]);
+                        }
+                        break;
+                    }
                 }
 
                 switch(oneInputStep.stepType.ToLower().Trim())
@@ -240,7 +439,7 @@ namespace CustomChallengesMod
                     {
                         CustomChallengesMod.CustomSteps.Step_AllOf oneOutputStep = new CustomChallengesMod.CustomSteps.Step_AllOf();
                         oneOutputStep.Depth = depth;
-                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps,depth+1);
+                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps,owner,depth+1);
                         outputSteps.Add(oneOutputStep);
                     }
                     break;
@@ -249,144 +448,153 @@ namespace CustomChallengesMod
                     {
                         CustomChallengesMod.CustomSteps.Step_OneOf oneOutputStep = new CustomChallengesMod.CustomSteps.Step_OneOf();
                         oneOutputStep.Depth = depth;
-                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps,depth+1);
-                        outputSteps.Add(oneOutputStep);
-                    }
-                    break;
-
-                    case "any_landmarks":
-                    {
-                        CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt oneOutputStep =
-                            new CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt();
-                        oneOutputStep.planet=planet;
-                        oneOutputStep.count=oneInputStep.count;
-                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                        oneOutputStep.minMass=oneInputStep.minMass;
-                        oneOutputStep.maxMass=oneInputStep.maxMass;
-                        oneOutputStep.Depth = depth;
-                        outputSteps.Add(oneOutputStep);
-                    }
-                    break;
-
-                    case "downrange":
-                    {
-                        CustomChallengesMod.CustomSteps.Step_Downrange oneOutputStep = new CustomChallengesMod.CustomSteps.Step_Downrange();
-                        oneOutputStep.planet=planet;
-                        oneOutputStep.downrange=(int)GetDistance(planet,systemName,stepID,"downrange",oneInputStep.downrange);
-                        outputSteps.Add(oneOutputStep);
-                    }
-                    break;
-
-                    case "height":
-                    {
-                        CustomChallengesMod.CustomSteps.Step_HeightExt oneOutputStep =
-                            new CustomChallengesMod.CustomSteps.Step_HeightExt();
-                        oneOutputStep.planet=planet;
-                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                        oneOutputStep.minHeight=GetDistance(planet,systemName,stepID,"minHeight",oneInputStep.minHeight);
-                        oneOutputStep.minMass=oneInputStep.minMass;
-                        oneOutputStep.maxHeight=GetDistance(planet,systemName,stepID,"maxHeight",oneInputStep.maxHeight);
-                        oneOutputStep.maxMass=oneInputStep.maxMass;
-                        outputSteps.Add(oneOutputStep);
-                    }
-                    break;
-
-                    case "impact":
-                    {
-                        CustomChallengesMod.CustomSteps.Step_Impact oneOutputStep = new CustomChallengesMod.CustomSteps.Step_Impact();
-                        oneOutputStep.planet=planet;
-                        oneOutputStep.impactVelocity=oneInputStep.impactVelocity;
-                        outputSteps.Add(oneOutputStep);
-                    }
-                    break;
-
-                    case "land":
-                    {
-                        CustomChallengesMod.CustomSteps.Step_LandExt oneOutputStep =
-                            new  CustomChallengesMod.CustomSteps.Step_LandExt();
-                        oneOutputStep.planet=planet;
-                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                        oneOutputStep.minMass=oneInputStep.minMass;
-                        oneOutputStep.maxMass=oneInputStep.maxMass;
-                        outputSteps.Add(oneOutputStep);
-                    }
-                    break;
-
-                    case "customorbit":
-                    {
-                        CustomChallengesMod.CustomSteps.Step_CustomOrbit oneOutputStep =
-                            new  CustomChallengesMod.CustomSteps.Step_CustomOrbit();
-                        oneOutputStep.planet=planet;
-                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
-
-                        oneOutputStep.maxApoapsis=GetDistance(planet,systemName,stepID,"maxApoapsis",oneInputStep.maxApoapsis)+planet.Radius;
-                        oneOutputStep.maxEcc=oneInputStep.maxEcc;
-                        oneOutputStep.maxMass=oneInputStep.maxMass;
-                        oneOutputStep.maxPeriapsis=GetDistance(planet,systemName,stepID,"maxPeriapsis",oneInputStep.maxPeriapsis)+planet.Radius;
-                        oneOutputStep.maxSma=GetDistance(planet,systemName,stepID,"maxSma",oneInputStep.maxSma)+planet.Radius;
-
-                        oneOutputStep.minApoapsis=GetDistance(planet,systemName,stepID,"minApoapsis",oneInputStep.minApoapsis)+planet.Radius;
-                        oneOutputStep.minEcc=oneInputStep.minEcc;
-                        oneOutputStep.minMass=oneInputStep.minMass;
-                        oneOutputStep.minPeriapsis=GetDistance(planet,systemName,stepID,"minPeriapsis",oneInputStep.minPeriapsis)+planet.Radius;
-                        oneOutputStep.minSma=GetDistance(planet,systemName,stepID,"minSma",oneInputStep.minSma)+planet.Radius;
-
-                        outputSteps.Add(oneOutputStep);
-                    }
-                    break;
-
-                    case "orbit":
-                    {
-                        SFS.Stats.StatsRecorder.Tracker.State_Orbit outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None;
-
-                        switch(oneInputStep.orbitType.ToLower().Trim())
-                        {
-                            case "none": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None ; break;
-                            case "esc": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Esc ; break;
-                            case "sub": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Sub ; break;
-                            case "high": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.High ; break;
-                            case "trans": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Trans ; break;
-                            case "low": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Low ; break;
-                            default:
-                            {
-                                throw new _InternalException
-                                (
-                                    string.Format
-                                        (
-                                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid orbitType field: \"{2}\""
-                                            ,systemName
-                                            ,stepID
-                                            ,oneInputStep.orbitType
-                                        )
-                                );
-                            }
-                        }
-
-                        CustomChallengesMod.CustomSteps.Step_OrbitExt oneOutputStep
-                            = new CustomChallengesMod.CustomSteps.Step_OrbitExt();
-                        oneOutputStep.planet=planet;
-                        oneOutputStep.orbit=outputOrbit;
-                        oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                        oneOutputStep.minMass=oneInputStep.minMass;
-                        oneOutputStep.maxMass=oneInputStep.maxMass;
+                        oneOutputStep.steps=GetSteps(systemName, stepID, oneInputStep.steps,owner,depth+1);
                         outputSteps.Add(oneOutputStep);
                     }
                     break;
 
                     default:
-                    {
-                        throw new _InternalException
-                        (
-                            string.Format
-                                (
-                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid stepType field: \"{2}\""
-                                    , systemName
-                                    , stepID
-                                    ,oneInputStep.stepType
-                                )
-                        );
-                    }
+                        foreach (SFS.WorldBase.Planet onePlanet in planets)
+                        {
+                            switch(oneInputStep.stepType.ToLower().Trim())
+                            {
+                                case "any_landmarks":
+                                {
+                                    CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt oneOutputStep =
+                                        new CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt();
+                                    oneOutputStep.planet=onePlanet;
+                                    oneOutputStep.count=oneInputStep.count;
+                                    oneOutputStep.hasEngines=oneInputStep.hasEngines;
+                                    oneOutputStep.minMass=oneInputStep.minMass;
+                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    oneOutputStep.Depth = depth;
+                                    outputSteps.Add(oneOutputStep);
+                                }
+                                break;
+
+                                case "downrange":
+                                {
+                                    CustomChallengesMod.CustomSteps.Step_Downrange oneOutputStep = new CustomChallengesMod.CustomSteps.Step_Downrange();
+                                    oneOutputStep.planet=onePlanet;
+                                    oneOutputStep.downrange=(int)GetDistance(onePlanet,systemName,stepID,"downrange",oneInputStep.downrange);
+                                    outputSteps.Add(oneOutputStep);
+                                }
+                                break;
+
+                                case "height":
+                                {
+                                    CustomChallengesMod.CustomSteps.Step_HeightExt oneOutputStep =
+                                        new CustomChallengesMod.CustomSteps.Step_HeightExt();
+                                    oneOutputStep.planet=onePlanet;
+                                    oneOutputStep.hasEngines=oneInputStep.hasEngines;
+                                    oneOutputStep.minHeight=GetDistance(onePlanet,systemName,stepID,"minHeight",oneInputStep.minHeight);
+                                    oneOutputStep.minMass=oneInputStep.minMass;
+                                    oneOutputStep.maxHeight=GetDistance(onePlanet,systemName,stepID,"maxHeight",oneInputStep.maxHeight);
+                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    outputSteps.Add(oneOutputStep);
+                                }
+                                break;
+
+                                case "impact":
+                                {
+                                    CustomChallengesMod.CustomSteps.Step_Impact oneOutputStep = new CustomChallengesMod.CustomSteps.Step_Impact();
+                                    oneOutputStep.planet=onePlanet;
+                                    oneOutputStep.impactVelocity=oneInputStep.impactVelocity;
+                                    outputSteps.Add(oneOutputStep);
+                                }
+                                break;
+
+                                case "land":
+                                {
+                                    CustomChallengesMod.CustomSteps.Step_LandExt oneOutputStep =
+                                        new  CustomChallengesMod.CustomSteps.Step_LandExt();
+                                    oneOutputStep.planet=onePlanet;
+                                    oneOutputStep.hasEngines=oneInputStep.hasEngines;
+                                    oneOutputStep.minMass=oneInputStep.minMass;
+                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    outputSteps.Add(oneOutputStep);
+                                }
+                                break;
+
+                                case "customorbit":
+                                {
+                                    CustomChallengesMod.CustomSteps.Step_CustomOrbit oneOutputStep =
+                                        new  CustomChallengesMod.CustomSteps.Step_CustomOrbit();
+                                    oneOutputStep.planet=onePlanet;
+                                    oneOutputStep.hasEngines=oneInputStep.hasEngines;
+
+                                    oneOutputStep.maxApoapsis=GetDistance(onePlanet,systemName,stepID,"maxApoapsis",oneInputStep.maxApoapsis)+onePlanet.Radius;
+                                    oneOutputStep.maxEcc=oneInputStep.maxEcc;
+                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    oneOutputStep.maxPeriapsis=GetDistance(onePlanet,systemName,stepID,"maxPeriapsis",oneInputStep.maxPeriapsis)+onePlanet.Radius;
+                                    oneOutputStep.maxSma=GetDistance(onePlanet,systemName,stepID,"maxSma",oneInputStep.maxSma)+onePlanet.Radius;
+
+                                    oneOutputStep.minApoapsis=GetDistance(onePlanet,systemName,stepID,"minApoapsis",oneInputStep.minApoapsis)+onePlanet.Radius;
+                                    oneOutputStep.minEcc=oneInputStep.minEcc;
+                                    oneOutputStep.minMass=oneInputStep.minMass;
+                                    oneOutputStep.minPeriapsis=GetDistance(onePlanet,systemName,stepID,"minPeriapsis",oneInputStep.minPeriapsis)+onePlanet.Radius;
+                                    oneOutputStep.minSma=GetDistance(onePlanet,systemName,stepID,"minSma",oneInputStep.minSma)+onePlanet.Radius;
+
+                                    outputSteps.Add(oneOutputStep);
+                                }
+                                break;
+
+                                case "orbit":
+                                {
+                                    SFS.Stats.StatsRecorder.Tracker.State_Orbit outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None;
+
+                                    switch(oneInputStep.orbitType.ToLower().Trim())
+                                    {
+                                        case "none": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.None ; break;
+                                        case "esc": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Esc ; break;
+                                        case "sub": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Sub ; break;
+                                        case "high": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.High ; break;
+                                        case "trans": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Trans ; break;
+                                        case "low": outputOrbit=SFS.Stats.StatsRecorder.Tracker.State_Orbit.Low ; break;
+                                        default:
+                                        {
+                                            throw new _InternalException
+                                            (
+                                                string.Format
+                                                    (
+                                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid orbitType field: \"{2}\""
+                                                        ,systemName
+                                                        ,stepID
+                                                        ,oneInputStep.orbitType
+                                                    )
+                                            );
+                                        }
+                                    }
+
+                                    CustomChallengesMod.CustomSteps.Step_OrbitExt oneOutputStep
+                                        = new CustomChallengesMod.CustomSteps.Step_OrbitExt();
+                                    oneOutputStep.planet=onePlanet;
+                                    oneOutputStep.orbit=outputOrbit;
+                                    oneOutputStep.hasEngines=oneInputStep.hasEngines;
+                                    oneOutputStep.minMass=oneInputStep.minMass;
+                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    outputSteps.Add(oneOutputStep);
+                                }
+                                break;
+
+                                default:
+                                {
+                                    throw new _InternalException
+                                    (
+                                        string.Format
+                                            (
+                                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid stepType field: \"{2}\""
+                                                , systemName
+                                                , stepID
+                                                ,oneInputStep.stepType
+                                            )
+                                    );
+                                }
+                            }
+                        }
+                    break;
                 }
+
             }
             return outputSteps;
         }
@@ -425,6 +633,40 @@ namespace CustomChallengesMod
             return null;
         }
 
+        static bool MatchesFilter(SFS.WorldBase.Planet planet,CustomChallengesMod.CustomChallengesData.FilterInfo filter)
+        {
+            if (filter==null) return true;
+            if (filter.isSignificant!=null && filter.isSignificant!= planet.data.basics.significant) return false;
+            if (filter.hasTerrain!=null && filter.hasTerrain!=planet.data.hasTerrain) return false;
+            if (filter.logsLanded!=null && filter.logsLanded!=planet.data.logs.Landed) return false;
+            if (filter.logsTakeoff!=null && filter.logsTakeoff!=planet.data.logs.Takeoff) return false;
+            if (filter.logsAtmosphere!=null && filter.logsAtmosphere!=planet.data.logs.Atmosphere) return false;
+            if (filter.logsOrbit!=null && filter.logsOrbit!=planet.data.logs.Orbit) return false;
+            if (filter.logsCrash!=null && filter.logsCrash!=planet.data.logs.Crash) return false;
+            if (filter.exclude!=null && filter.exclude.Contains(planet.codeName)) return false;
+            if (filter.primaries!=null)
+            {
+                if (planet.parentBody==null) return false;
+
+                foreach (string onePrimary in filter.primaries)
+                    if (onePrimary.EndsWith("*"))
+                    {
+                        string primaryName =  onePrimary.Substring(0,onePrimary.Length-1);
+                        for (SFS.WorldBase.Planet primary=planet.parentBody; primary!=null;  primary=primary.parentBody)
+                        {
+                            if (primary.codeName==primaryName) return true;
+                        }
+                    }
+                    else
+                    {
+                        if (planet.parentBody.codeName==onePrimary) return true;
+                    }
+
+                return false;
+            }
+            return true;
+        }
+
         static void Postfix(ref System.Collections.Generic.List<SFS.Logs.Challenge> __result)
         {
             string traceID="T-01";
@@ -436,6 +678,7 @@ namespace CustomChallengesMod
                     new  System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData>();
 
                 System.Collections.Generic.Dictionary<string, SFS.Logs.Challenge> challengesById = new  System.Collections.Generic.Dictionary<string, SFS.Logs.Challenge>();
+
                 if (UnityEngine.Application.isEditor)
                 {
                     ResourcesLoader.main = UnityEngine.Object.FindObjectOfType<ResourcesLoader>();
@@ -462,7 +705,7 @@ namespace CustomChallengesMod
 
                 traceID="T-02";
 
-                // populate dictionary for existing challenges
+                // populate dictionary for existing challenges, replacing the steps with the equivalent custom steps
                 foreach (SFS.Logs.Challenge oneChallenge in  __result)
                 {
                     if (oneChallenge.steps.Count>0)
@@ -514,15 +757,16 @@ namespace CustomChallengesMod
                 if (custom_Challenges!=null)
                 {
                     int itemNo=0;
+                    int sequenceNo=challengesById.Count;
 
-                    // copy the list as read into a dictionary, ignoring invalid items
+                    System.Collections.Generic.List<_ChallengeIntermediate> outputChallenges= new System.Collections.Generic.List<_ChallengeIntermediate>();
+
+                    // generate a list of challenges from the custom challenges supplied, ignoring invalid items
                     foreach (CustomChallengesMod.CustomChallengesData oneInputChallenge in custom_Challenges)
                     {
-                        _ChallengeIntermediate oneOutputChallenge=new _ChallengeIntermediate();
                         itemNo++;
                         try
                         {
-                            bool hasData = true;
                             bool canAdd=false;
 
                             if (oneInputChallenge.id.Trim()=="")
@@ -537,47 +781,46 @@ namespace CustomChallengesMod
                                         )
                                 );
                             }
-                            oneOutputChallenge.id=oneInputChallenge.id.Trim();
 
-                            string icon= oneInputChallenge.icon.ToLower().Trim();
+                            string inputIcon= oneInputChallenge.icon.Trim();
+                            UnityEngine.Sprite outputIcon = null;
 
-                            switch (icon)
+                            switch (inputIcon.ToLower())
                             {
-                                case "":hasData=false;break;
-                                case "firstflight":oneOutputChallenge.icon=challengeIcons.firstFlight;break;
-                                case "10km":oneOutputChallenge.icon=challengeIcons.icon_10Km;break;
-                                case "30km":oneOutputChallenge.icon=challengeIcons.icon_30Km;break;
-                                case "50km":oneOutputChallenge.icon=challengeIcons.icon_50Km;break;
-                                case "downrange":oneOutputChallenge.icon=challengeIcons.icon_Downrange;break;
-                                case "reach_orbit":oneOutputChallenge.icon=challengeIcons.icon_Reach_Orbit;break;
-                                case "orbit_high":oneOutputChallenge.icon=challengeIcons.icon_Orbit_High;break;
-                                case "capture":oneOutputChallenge.icon=challengeIcons.icon_Capture;break;
-                                case "tour":oneOutputChallenge.icon=challengeIcons.icon_Tour;break;
-                                case "crash":oneOutputChallenge.icon=challengeIcons.icon_Crash;break;
-                                case "land_one_way":oneOutputChallenge.icon=challengeIcons.icon_UnmannedLanding;break;
-                                case "land_return":oneOutputChallenge.icon=challengeIcons.icon_MannedLanding;break;
+                                case "":outputIcon=null;break;
+                                case "firstflight":outputIcon=challengeIcons.firstFlight;break;
+                                case "10km":outputIcon=challengeIcons.icon_10Km;break;
+                                case "30km":outputIcon=challengeIcons.icon_30Km;break;
+                                case "50km":outputIcon=challengeIcons.icon_50Km;break;
+                                case "downrange":outputIcon=challengeIcons.icon_Downrange;break;
+                                case "reach_orbit":outputIcon=challengeIcons.icon_Reach_Orbit;break;
+                                case "orbit_high":outputIcon=challengeIcons.icon_Orbit_High;break;
+                                case "capture":outputIcon=challengeIcons.icon_Capture;break;
+                                case "tour":outputIcon=challengeIcons.icon_Tour;break;
+                                case "crash":outputIcon=challengeIcons.icon_Crash;break;
+                                case "land_one_way":outputIcon=challengeIcons.icon_UnmannedLanding;break;
+                                case "land_return":outputIcon=challengeIcons.icon_MannedLanding;break;
                                 default:
                                 {
-                                    if (icon.EndsWith(".png"))
+                                    if (inputIcon.ToLower().EndsWith(".png"))
                                     {
-                                        UnityEngine.Sprite sprite=LoadNewSprite
+                                        outputIcon=LoadNewSprite
                                             (
                                                 FileLocations.SolarSystemsFolder.Extend(solarSystem.name)
-                                                    .ExtendToFile("Custom_Challenge_Icons/" + icon)
+                                                    .ExtendToFile("Custom_Challenge_Icons/" + inputIcon)
                                             );
 
-                                        if (sprite==null)
+                                        if (outputIcon==null)
                                         {
                                             string.Format
                                                 (
                                                     "Solar system \"{0}\" Custom_Challenges.txt file id:{1} cannot find icon file: \"{2}\""
                                                     ,solarSystem.name
-                                                    ,oneOutputChallenge.id
-                                                    ,"Custom_Challenge_Icons/" + icon
+                                                    ,oneInputChallenge.id
+                                                    ,"Custom_Challenge_Icons/" + inputIcon
                                                 );
                                         }
 
-                                        oneOutputChallenge.icon=sprite;
                                     }
                                     else
                                     {
@@ -587,8 +830,8 @@ namespace CustomChallengesMod
                                                     (
                                                         "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid icon field: \"{2}\""
                                                         ,solarSystem.name
-                                                        ,oneOutputChallenge.id
-                                                        ,oneInputChallenge.icon
+                                                        ,oneInputChallenge.id
+                                                        ,inputIcon
                                                     )
                                             );
                                     }
@@ -596,172 +839,103 @@ namespace CustomChallengesMod
                                 break;
                             }
 
-                            if (hasData)
+                            if (SFS.Base.worldBase!=null && SFS.Base.worldBase.settings!=null && SFS.Base.worldBase.settings.difficulty!=null)
                             {
-                                if (SFS.Base.worldBase!=null && SFS.Base.worldBase.settings!=null && SFS.Base.worldBase.settings.difficulty!=null)
+                                switch (SFS.Base.worldBase.settings.difficulty.difficulty)
                                 {
-                                    switch (SFS.Base.worldBase.settings.difficulty.difficulty)
+                                    case SFS.WorldBase.Difficulty.DifficultyType.Normal:
+                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="normal" );
+                                    break;
+
+                                    case SFS.WorldBase.Difficulty.DifficultyType.Hard:
+                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="hard" );
+                                    break;
+
+                                    case SFS.WorldBase.Difficulty.DifficultyType.Realistic:
+                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="realistic" );
+                                    break;
+
+                                    default:
+                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
+                            }
+
+                            if (canAdd)
+                            {
+                                if (oneInputChallenge.id.Contains("{planet}"))
+                                {
+                                    foreach (SFS.WorldBase.Planet onePlanet in SFS.Base.planetLoader.planets.Values)
                                     {
-                                        case SFS.WorldBase.Difficulty.DifficultyType.Normal:
-                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="normal" );
-                                        break;
+                                        if (MatchesFilter(onePlanet,oneInputChallenge.filter))
+                                        {
+                                            _ChallengeIntermediate oneOutputChallenge;
 
-                                        case SFS.WorldBase.Difficulty.DifficultyType.Hard:
-                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="hard" );
-                                        break;
-
-                                        case SFS.WorldBase.Difficulty.DifficultyType.Realistic:
-                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="realistic" );
-                                        break;
-
-                                        default:
-                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
-                                        break;
+                                            if (outputIcon==null)
+                                            {
+                                                oneOutputChallenge=new _ChallengeIntermediate();
+                                                oneOutputChallenge.id=oneInputChallenge.id;
+                                            }
+                                            else
+                                            {
+                                                oneOutputChallenge=GetChallenge(solarSystem.name, oneInputChallenge, sequenceNo++,onePlanet);
+                                            }
+                                            oneOutputChallenge.icon=outputIcon;
+                                            outputChallenges.Add(oneOutputChallenge);
+                                        }
                                     }
                                 }
                                 else
                                 {
-                                    canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
+                                    _ChallengeIntermediate oneOutputChallenge;
+                                    if (outputIcon==null)
+                                    {
+                                        oneOutputChallenge=new _ChallengeIntermediate();
+                                        oneOutputChallenge.id=oneInputChallenge.id;
+                                    }
+                                    else
+                                    {
+                                        oneOutputChallenge=GetChallenge(solarSystem.name, oneInputChallenge, sequenceNo++);
+                                    }
+                                    oneOutputChallenge.icon=outputIcon;
+                                    outputChallenges.Add(oneOutputChallenge);
                                 }
-                            }
-
-                            if (hasData && canAdd)
-                            {
-                                if (oneInputChallenge.ownerName.Trim()=="")
-                                {
-                                    throw new _InternalException
-                                    (
-                                        string.Format
-                                            (
-                                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing ownerName field"
-                                                ,solarSystem.name
-                                                ,oneOutputChallenge.id
-                                            )
-                                    );
-                                }
-
-                                if (!SFS.Base.planetLoader.planets.ContainsKey(oneInputChallenge.ownerName.Trim()))
-                                {
-                                    throw new _InternalException
-                                    (
-                                        string.Format
-                                            (
-                                                "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an ownerName field referring to a non-existent planet \"{2}\""
-                                                ,solarSystem.name
-                                                ,oneOutputChallenge.id
-                                                ,oneInputChallenge.ownerName.Trim()
-                                            )
-                                    );
-                                }
-                                oneOutputChallenge.owner=SFS.Base.planetLoader.planets[oneInputChallenge.ownerName.Trim()];
-
-                                oneOutputChallenge.displayPriority=(100*oneInputChallenge.priority - challengesById.Count);
-
-                                if (oneInputChallenge.title.Trim()=="")
-                                {
-                                    throw new _InternalException
-                                        (
-                                            string.Format
-                                                (
-                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing title field"
-                                                    ,solarSystem.name
-                                                    ,oneOutputChallenge.id
-                                                )
-                                        );
-                                }
-
-                                string title=ExpandDistances
-                                    (
-                                        oneOutputChallenge.owner
-                                        ,solarSystem.name
-                                        ,oneOutputChallenge.id
-                                        ,"title"
-                                        ,oneInputChallenge.title
-                                    );
-                                oneOutputChallenge.title=new System.Func<string>(() => title);
-
-                                if (oneInputChallenge.description.Trim()=="")
-                                {
-                                    throw new _InternalException
-                                        (
-                                            string.Format
-                                                (
-                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1}  has a missing description field"
-                                                    ,solarSystem.name
-                                                    ,oneOutputChallenge.id
-                                                )
-                                        );
-                                }
-
-                                string description=ExpandDistances
-                                    (
-                                        oneOutputChallenge.owner
-                                        ,solarSystem.name
-                                        ,oneOutputChallenge.id
-                                        ,"description"
-                                        ,oneInputChallenge.description
-                                    );
-                                oneOutputChallenge.description=new System.Func<string>(() => description);
-
-                                switch (oneInputChallenge.challengeDifficulty.ToLower().Trim())
-                                {
-                                    case "easy":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Easy;break;
-                                    case "medium":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Medium;break;
-                                    case "hard":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Hard;break;
-                                    case "extreme":oneOutputChallenge.difficulty=SFS.Logs.Difficulty.Extreme;break;
-                                    case "":
-                                        throw new _InternalException
-                                            (
-                                                string.Format
-                                                    (
-                                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a missing difficulty field"
-                                                        ,solarSystem.name
-                                                        ,oneOutputChallenge.id
-                                                    )
-                                            );
-                                    default:
-                                        throw new _InternalException
-                                            (
-                                                string.Format
-                                                    (
-                                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid difficulty field: \"{2}\""
-                                                        ,solarSystem.name
-                                                        ,oneOutputChallenge.id
-                                                        ,oneInputChallenge.difficulty
-                                                    )
-                                            );
-                                }
-
-                                oneOutputChallenge.returnSafely = oneInputChallenge.returnSafely;
-                                oneOutputChallenge.steps = GetSteps(solarSystem.name,oneOutputChallenge.id,oneInputChallenge.steps);
-                            }
-
-                            if (hasData)
-                            {
-                                if (canAdd)
-                                {
-                                    challengesById[oneOutputChallenge.id]=new SFS.Logs.Challenge
-                                        (
-                                            oneOutputChallenge.displayPriority
-                                            ,oneOutputChallenge.id
-                                            ,oneOutputChallenge.owner
-                                            ,oneOutputChallenge.icon
-                                            ,oneOutputChallenge.title
-                                            ,oneOutputChallenge.description
-                                            ,oneOutputChallenge.difficulty
-                                            ,oneOutputChallenge.returnSafely
-                                            ,oneOutputChallenge.steps
-                                        );
-                                }
-                            }
-                            else if (challengesById.ContainsKey(oneOutputChallenge.id))
-                            {
-                                challengesById.Remove(oneOutputChallenge.id);
                             }
                         }
                         catch (_InternalException excp)
                         {
                             UnityEngine.Debug.LogErrorFormat("[CustomChallengesMod.CollectChallenges.Postfix] {0}",excp.Message);
+                        }
+                    }
+
+                    // merge the challenges with the vanilla challenge list
+                    foreach (_ChallengeIntermediate oneOutputChallenge in outputChallenges)
+                    {
+                        if (oneOutputChallenge.icon!=null)
+                        {
+                            challengesById[oneOutputChallenge.id]=new SFS.Logs.Challenge
+                                (
+                                    oneOutputChallenge.displayPriority
+                                    ,oneOutputChallenge.id
+                                    ,oneOutputChallenge.owner
+                                    ,oneOutputChallenge.icon
+                                    ,oneOutputChallenge.title
+                                    ,oneOutputChallenge.description
+                                    ,oneOutputChallenge.difficulty
+                                    ,false //returnSafely
+                                    ,oneOutputChallenge.steps
+                                );
+
+                            // by setting returnSafely=false in the constructor and setting it here instead prevent to automatic land on earth step from being generated
+                            challengesById[oneOutputChallenge.id].returnSafely = oneOutputChallenge.returnSafely;
+                        }
+                        else if (challengesById.ContainsKey(oneOutputChallenge.id))
+                        {
+                            challengesById.Remove(oneOutputChallenge.id);
                         }
                     }
                 }
