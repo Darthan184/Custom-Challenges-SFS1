@@ -125,10 +125,11 @@ _Challenge_
 * indicates how to sort this challenge, is a small signed integer, higher numbers appear at the top of the list.
 
 "title" : {string value} (required if icon is supplied)
-* The title to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string like \[\[3A\]\] or \[\[0.5R:Moon\]\] , specifying planet-relative units will be replaced with a value in m, km, Mm, Gm, Tm or ly. The planet defaults to the one in ownerName. A sub-string of "{planet}" will be replaced by the planet neam if the id contains "{planet}".
+* The title to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string like \[\[3A\]\] or \[\[0.5R:Moon\]\] , specifying planet-relative units will be replaced with a value in m, km, Mm, Gm, Tm or ly. The planet defaults to the one in ownerName. If the id contains "{planet}", a sub-string of "{planet}" will be replaced by the planet name and a sub-string of "{primary}" the name of the primary of the planet.
+
 
 "description" : {string value} (required if icon is supplied)
-* The description to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string of "{planet}" will be replaced by the planet neam if the id contains "{planet}".
+* The description to be used, N.B. not automatically translated (the in-game ones are translated). If the id contains "{planet}", a sub-string of "{planet}" will be replaced by the planet name and a sub-string of "{primary}" the name of the primary of the planet.
 
 "ownerName" : {string value} (required if icon is supplied and the id does not contain "{planet}")
 * The name of the planet that is the 'owner' of this challenge. This specifies the planet the challenge appears under.
@@ -148,6 +149,9 @@ _Filter_
 
 "isSignificant" : {bool value} (ignored if null)
 * Only include if the planet 'is significant' flag has this value, if omitted, is not checked
+
+"hasSatellites" : {bool value} (ignored if null)
+* Only include if the planet 'has satellites' flag has this value, if omitted, is not checked
 
 "hasTerrain" : {bool value} (ignored if null)
 * Only include if the planet 'has terrain' flag has this value, if omitted, is not checked

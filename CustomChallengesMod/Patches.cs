@@ -251,7 +251,11 @@ namespace CustomChallengesMod
                     ,oneInputChallenge.title
                 );
 
-            if (planet!=null) title=title.Replace("{planet}", planet.codeName);
+            if (planet!=null)
+            {
+                title=title.Replace("{planet}", planet.codeName);
+                if (planet.parentBody!=null) title=title.Replace("{primary}", planet.parentBody.codeName);
+            }
             oneOutputChallenge.title=new System.Func<string>(() => title);
 
             if (oneInputChallenge.description.Trim()=="")
@@ -276,7 +280,11 @@ namespace CustomChallengesMod
                     ,oneInputChallenge.description
                 );
 
-            if (planet!=null) description=description.Replace("{planet}", planet.codeName);
+            if (planet!=null)
+            {
+                description=description.Replace("{planet}", planet.codeName);
+                if (planet.parentBody!=null) title=title.Replace("{primary}", planet.parentBody.codeName);
+            }
             oneOutputChallenge.description=new System.Func<string>(() => description);
 
             switch (oneInputChallenge.challengeDifficulty.ToLower().Trim())
@@ -638,6 +646,7 @@ namespace CustomChallengesMod
             if (filter==null) return true;
             if (filter.isSignificant!=null && filter.isSignificant!= planet.data.basics.significant) return false;
             if (filter.hasTerrain!=null && filter.hasTerrain!=planet.data.hasTerrain) return false;
+            if (filter.hasSatellites!=null && filter.hasSatellites!=(planet.satellites!=null && planet.satellites.Length>0)) return false;
             if (filter.logsLanded!=null && filter.logsLanded!=planet.data.logs.Landed) return false;
             if (filter.logsTakeoff!=null && filter.logsTakeoff!=planet.data.logs.Takeoff) return false;
             if (filter.logsAtmosphere!=null && filter.logsAtmosphere!=planet.data.logs.Atmosphere) return false;
@@ -678,12 +687,14 @@ namespace CustomChallengesMod
                     new  System.Collections.Generic.List<CustomChallengesMod.CustomChallengesData>();
 
                 System.Collections.Generic.Dictionary<string, SFS.Logs.Challenge> challengesById = new  System.Collections.Generic.Dictionary<string, SFS.Logs.Challenge>();
+                bool debug =CustomChallengesMod.SettingsManager.settings.debug;
 
                 if (UnityEngine.Application.isEditor)
                 {
                     ResourcesLoader.main = UnityEngine.Object.FindObjectOfType<ResourcesLoader>();
                 }
                 ResourcesLoader.ChallengeIcons challengeIcons = ResourcesLoader.main.challengeIcons;
+                if (debug) UnityEngine.Debug.Log("[CustomChallengesMod.CollectChallenges.Postfix-I-01] Loading Custom_Challenges.txt");
 
                 if (solarSystem.name.Length > 0)
                 {
@@ -758,8 +769,9 @@ namespace CustomChallengesMod
                 {
                     int itemNo=0;
                     int sequenceNo=challengesById.Count;
-
                     System.Collections.Generic.List<_ChallengeIntermediate> outputChallenges= new System.Collections.Generic.List<_ChallengeIntermediate>();
+
+                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-02] Custom_Challenges.txt defines {0:N0} challenges", custom_Challenges.Count);
 
                     // generate a list of challenges from the custom challenges supplied, ignoring invalid items
                     foreach (CustomChallengesMod.CustomChallengesData oneInputChallenge in custom_Challenges)
@@ -812,7 +824,7 @@ namespace CustomChallengesMod
 
                                         if (outputIcon==null)
                                         {
-                                            string.Format
+                                            UnityEngine.Debug.LogFormat
                                                 (
                                                     "Solar system \"{0}\" Custom_Challenges.txt file id:{1} cannot find icon file: \"{2}\""
                                                     ,solarSystem.name
@@ -878,7 +890,7 @@ namespace CustomChallengesMod
                                             if (outputIcon==null)
                                             {
                                                 oneOutputChallenge=new _ChallengeIntermediate();
-                                                oneOutputChallenge.id=oneInputChallenge.id;
+                                                oneOutputChallenge.id=oneInputChallenge.id.Trim().Replace("{planet}", onePlanet.codeName);
                                             }
                                             else
                                             {
@@ -912,9 +924,14 @@ namespace CustomChallengesMod
                         }
                     }
 
+                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-02] {0:N0} challenge definitions generated", outputChallenges.Count);
+                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-03] {0:N0} challenges before merging", challengesById.Count);
+
                     // merge the challenges with the vanilla challenge list
                     foreach (_ChallengeIntermediate oneOutputChallenge in outputChallenges)
                     {
+//~                         if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-04] id={0} icon={1}", oneOutputChallenge.id,oneOutputChallenge.icon);
+
                         if (oneOutputChallenge.icon!=null)
                         {
                             challengesById[oneOutputChallenge.id]=new SFS.Logs.Challenge
@@ -932,12 +949,16 @@ namespace CustomChallengesMod
 
                             // by setting returnSafely=false in the constructor and setting it here instead prevent to automatic land on earth step from being generated
                             challengesById[oneOutputChallenge.id].returnSafely = oneOutputChallenge.returnSafely;
+//~                             if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-05] updating id={0}", oneOutputChallenge.id);
                         }
                         else if (challengesById.ContainsKey(oneOutputChallenge.id))
                         {
+//~                             if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-06] removing id={0}", oneOutputChallenge.id);
                             challengesById.Remove(oneOutputChallenge.id);
                         }
                     }
+
+                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-07] {0:N0} challenges after merging", challengesById.Count);
                 }
                 traceID="T-04";
                 __result.Clear();

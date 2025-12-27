@@ -23,6 +23,9 @@
             /// <summary>Only include if the planet 'is significant' flag has this value, if omitted, is not checked</summary>
             public bool? isSignificant=null;
 
+            /// <summary>Only include if the planet 'has satellites' flag has this value, if omitted, is not checked</summary>
+            public bool? hasSatellites=null;
+
             /// <summary>Only include if the planet 'has terrain' flag has this value, if omitted, is not checked</summary>
             public bool? hasTerrain=null;
 
