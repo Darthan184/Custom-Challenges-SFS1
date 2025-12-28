@@ -643,7 +643,7 @@
             if (hasEngines!=null) result.AppendFormat(", hasEngines:{0}", hasEngines);
             if (!double.IsNaN(minMass)) result.AppendFormat(", minMass:{0:N0}t", minMass);
             if (!double.IsNaN(maxMass)) result.AppendFormat(", maxMass:{0:N0}t", maxMass);
-            if (progress!="")
+            if (!string.IsNullOrEmpty(progress))
             {
                 string[] progressArray=ParseProgress(progress);
                 System.Text.StringBuilder formattedProgress = new System.Text.StringBuilder();
