@@ -49,6 +49,11 @@
         }
     }
 
+    public interface IChallengeStep
+    {
+        string OnConflict_Nested(string a, string b);
+    }
+
     /// <summary>Data for one extended height challenge step</summary>
     public class Step_HeightExt : SFS.Logs.ChallengeStep
     {
@@ -88,7 +93,7 @@
     }
 
     /// <summary>Data for a one of several challenge steps</summary>
-    public class Step_OneOf : SFS.Logs.ChallengeStep
+    public class Step_OneOf : SFS.Logs.ChallengeStep, CustomChallengesMod.CustomSteps.IChallengeStep
     {
         public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
         private string [] _delim = new string[]{"|a"};
@@ -131,7 +136,19 @@
             return false;
         }
 
+        /// <summary>
+        /// SFS OnConflict code treated empty/null as 'not started,' callers seem to assume that empty/null is 'complete'
+        /// assuming the latter
+        /// </summary>
         public override string OnConflict(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a)) return "";
+            if (string.IsNullOrEmpty(b)) return "";
+            return OnConflict_Nested(a,b);
+        }
+
+        /// <summary>for nested steps null/emoty indicates 'not started'</summary>
+        public string OnConflict_Nested(string a, string b)
         {
             string[] progressA;
             string[] progressB;
@@ -159,7 +176,14 @@
             {
                 if (stepIndex<progressA.Length && stepIndex<progressB.Length)
                 {
-                    stepProgress[stepIndex]=steps[stepIndex].OnConflict(progressA[stepIndex], progressB[stepIndex]);
+                    if (steps[stepIndex] is CustomChallengesMod.CustomSteps.IChallengeStep challengeStep)
+                    {
+                        stepProgress[stepIndex]=challengeStep.OnConflict_Nested(progressA[stepIndex], progressB[stepIndex]);
+                    }
+                    else
+                    {
+                        stepProgress[stepIndex]=steps[stepIndex].OnConflict(progressA[stepIndex], progressB[stepIndex]);
+                    }
                 }
                 else if (stepIndex<progressA.Length)
                 {
@@ -276,7 +300,7 @@
     }
 
     /// <summary>Data for a all of several challenge steps (replacement for multi)</summary>
-    public class Step_AllOf : SFS.Logs.ChallengeStep
+    public class Step_AllOf : SFS.Logs.ChallengeStep, CustomChallengesMod.CustomSteps.IChallengeStep
     {
         public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
         private string [] _delim = new string[]{"|a"};
@@ -358,7 +382,19 @@
             return false;
         }
 
+        /// <summary>
+        /// SFS OnConflict code treated empty/null as 'not started,' callers seem to assume that empty/null is 'complete'
+        /// assuming the latter
+        /// </summary>
         public override string OnConflict(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a)) return "";
+            if (string.IsNullOrEmpty(b)) return "";
+            return OnConflict_Nested(a,b);
+        }
+
+        /// <summary>for nested steps null/empty indicates 'not started'</summary>
+        public string OnConflict_Nested(string a, string b)
         {
             string[] progressA;
             string[] progressB;
@@ -386,7 +422,14 @@
             {
                 if (stepIndex<progressA.Length && stepIndex<progressB.Length)
                 {
-                    stepProgress[stepIndex]=steps[stepIndex].OnConflict(progressA[stepIndex], progressB[stepIndex]);
+                    if (steps[stepIndex] is CustomChallengesMod.CustomSteps.IChallengeStep challengeStep)
+                    {
+                        stepProgress[stepIndex]=challengeStep.OnConflict_Nested(progressA[stepIndex], progressB[stepIndex]);
+                    }
+                    else
+                    {
+                        stepProgress[stepIndex]=steps[stepIndex].OnConflict(progressA[stepIndex], progressB[stepIndex]);
+                    }
                 }
                 else if (stepIndex<progressA.Length)
                 {
@@ -558,7 +601,7 @@
     }
 
     /// <summary>Data for one extended any landmarks step</summary>
-    public class Step_Any_LandmarksExt : SFS.Logs.Step_Any_Landmarks
+    public class Step_Any_LandmarksExt : SFS.Logs.Step_Any_Landmarks, CustomChallengesMod.CustomSteps.IChallengeStep
     {
         private string [] _delim = new string[]{"|a"};
         public bool? hasEngines=null;
@@ -590,7 +633,19 @@
             return result;
         }
 
+        /// <summary>
+        /// SFS OnConflict code treated empty/null as 'not started,' callers seem to assume that empty/null is 'complete'
+        /// assuming the latter
+        /// </summary>
         public override string OnConflict(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a)) return "";
+            if (string.IsNullOrEmpty(b)) return "";
+            return OnConflict_Nested(a,b);
+        }
+
+        /// <summary>for nested steps null/empty indicates 'not started'</summary>
+        public string OnConflict_Nested(string a, string b)
         {
             System.Collections.Generic.HashSet<string> progressA;
             System.Collections.Generic.HashSet<string> progressB;
