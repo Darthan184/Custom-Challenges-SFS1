@@ -142,8 +142,8 @@
         /// </summary>
         public override string OnConflict(string a, string b)
         {
-            if (string.IsNullOrEmpty(a)) return "";
-            if (string.IsNullOrEmpty(b)) return "";
+            if (string.IsNullOrEmpty(a)) return null;
+            if (string.IsNullOrEmpty(b)) return null;
             return OnConflict_Nested(a,b);
         }
 
@@ -388,8 +388,8 @@
         /// </summary>
         public override string OnConflict(string a, string b)
         {
-            if (string.IsNullOrEmpty(a)) return "";
-            if (string.IsNullOrEmpty(b)) return "";
+            if (string.IsNullOrEmpty(a)) return null;
+            if (string.IsNullOrEmpty(b)) return null;
             return OnConflict_Nested(a,b);
         }
 
@@ -422,7 +422,11 @@
             {
                 if (stepIndex<progressA.Length && stepIndex<progressB.Length)
                 {
-                    if (steps[stepIndex] is CustomChallengesMod.CustomSteps.IChallengeStep challengeStep)
+                    if (progressA[stepIndex]=="**" || progressB[stepIndex]=="**")
+                    {
+                        stepProgress[stepIndex]= "**";
+                    }
+                    else if (steps[stepIndex] is CustomChallengesMod.CustomSteps.IChallengeStep challengeStep)
                     {
                         stepProgress[stepIndex]=challengeStep.OnConflict_Nested(progressA[stepIndex], progressB[stepIndex]);
                     }
@@ -639,8 +643,8 @@
         /// </summary>
         public override string OnConflict(string a, string b)
         {
-            if (string.IsNullOrEmpty(a)) return "";
-            if (string.IsNullOrEmpty(b)) return "";
+            if (string.IsNullOrEmpty(a)) return null;
+            if (string.IsNullOrEmpty(b)) return null;
             return OnConflict_Nested(a,b);
         }
 
