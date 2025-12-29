@@ -29,6 +29,56 @@
             ]
     }
     ,{
+        "id":"Flyby_{planet}_Moons"
+        ,"icon": "flyby.png"
+        ,"priority":0
+        ,"title":"Flyby Moons of {planet}"
+        ,"description":"Close flyby of all the moons of {planet}"
+        ,"filter":
+        {
+            "hasSatellites": true
+            ,"exclude":["Earth","Sun"]
+        }
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "stepType":"Multi"
+                    ,"steps":
+                        [
+                            {
+                                "planetName":"{sat}"
+                                ,"stepType":"Height"
+                                ,"maxHeight": "2A"
+                            }
+                        ]
+                }
+            ]
+    }
+    ,{
+        "id":"{planet}_Landmarks"
+        ,"icon": "Tour"
+        ,"priority":-1
+        ,"title":"Surface tour of {planet}"
+        ,"description":"Land on at least three different landmarks of {planet} (or all landmarks if less than three) and return safely"
+        ,"filter":
+            {
+                "hasLandmarks":true
+                ,"exclude":["Earth","Moon","Sun"]
+            }
+        ,"challengeDifficulty": "Extreme"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"{planet}"
+                    ,"stepType":"Any_Landmarks"
+                    ,"count":3
+                }
+            ]
+    }
+    ,{
         "id":"MoonOrAst_Orbit"
         ,"icon": "Capture"
         ,"priority":0

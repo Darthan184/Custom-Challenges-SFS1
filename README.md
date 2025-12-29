@@ -1,11 +1,12 @@
 # Custom-Challenges-SFS1
+
 The mod adds support for custom challenges to custom solar systems. In addition it:
 
 * displays 'in progress' challenges with step information in a closable window in the world scene.
 * for vanilla challenges 'return safely' adds a step for 'land on home world' (world with initial launch pad) even when the homeworld is not 'Earth'.
 * for custom challenges 'return safely' will not automatically add a 'land on home world' step, you are free to add a step for a different world to land on (and recover) or not add a land step (in which case you can recover on any world). N.B. in order to be able recover on a world other than the homeword, you will need the [Multi Launchpad mod](https://github.com/Darthan184/Multi-Launchpad-SFS1/releases) and select the launchpad to the world to recover on before landing.
 
-N.B the challenge system in SFS is a bit buggy. It sometimes fails to detect when a condition is matched and sometimes forgets progress for a multi-step challenge. I've noted the bugs I've come across but you may need to test that a challenge works.
+This mod (should) fix the bugs in the challenge system in SFS - the Moon Tour and Mars Tour challenges should now work correctly (i.e. even with docking and loading from a quicksave). This will apply to the vanilla challlenges even if a "Custom_Challenges.txt" file is not provided. I've tested this, but the error cases were a bit difficult to identify, other bugs may still lurk.
 
 To specify custom challenges you need to add a Custom\_Challenges.txt file and possibly a Custom\_Challenge\_Icons directory if you want to add your own challenge icons:
 
@@ -13,7 +14,7 @@ To specify custom challenges you need to add a Custom\_Challenges.txt file and p
 
 The file is a JSON array of challenge definitions each of which also contains a JSON array of steps of various types to be completed in the specified order. There are also two special step type - "Multi" - that contains an array of steps that may be completed in any order and "Any" that contains an array of steps any or which may be completed.
 
-An example of a Custom\_Challenges.txt. Note Custom\_Challenges.txt in the CC\_SampleWorld  file gives more examples:
+An example of a Custom\_Challenges.txt. Note Custom\_Challenges.txt in the ![CC\_SampleWorld  file](CC_SampleWorld.zip) gives more examples:
 
 ```
 [
@@ -87,13 +88,14 @@ An example of a Custom\_Challenges.txt. Note Custom\_Challenges.txt in the CC\_S
 
 Details for each field:
 
-_Challenge_
+__Challenge__
 
 "id" : {string value} (required)
-* The identifier for this challenge. Land and return challenges should start with "Land_" for consistency with standard challenges. N.B. is case-sensitive.
-* If the same id as a vanilla challenge is supplied: this challenge will replace the vanilla challenge.
-* If only the id field is supplied and it is same id as a vanilla challenge: the vanilla challenge will be removed (for this world only).
-* If the id contains "{planet}" the as challenge for every planet that matches the supplied filter will be created and have an ownerName of the planet name.
+* The identifier for this challenge. N.B. is case-sensitive.
+* If the same id as a vanilla challenge is supplied; this challenge will replace the vanilla challenge.
+* If the same id as a vanilla challenge is supplied; this challenge will replace the vanilla challenge.
+* If only the id field is supplied and it is same id as a vanilla challenge; the vanilla challenge will be removed (for this world only).
+* If the id contains "{planet}", a challenge for every planet that matches the supplied filter will be created and have an ownerName of the planet name.
 * vanilla challenge ids:
     * Liftoff\_0
     * Reach\_10km
@@ -119,7 +121,7 @@ _Challenge_
 *  The difficulty mode that this challenge is enabled for: "all", "normal", "hard", "realistic"
 
 "filter" : {object with filter information} (default no filter used)
-* Fillter to be used if the id contains "{planet}". Ignored unless the id contains "{planet}"
+* Fillter to be used if the id contains "{planet}". Ignored unless the id contains "{planet}". Details are below.
 
 "priority" : {int value} (default 0)
 * indicates how to sort this challenge, is a small signed integer, higher numbers appear at the top of the list.
@@ -143,8 +145,10 @@ _Challenge_
 "steps" : {array of step values} (default null)
 * The steps needed to complete this challenge in the order they need to be accomplished in. N.B. all the pre-defined challenges only specify one step - the 'Tour' challenges use special 'multi step' types that indicates they can be done in any order - these are all buggy. "returnSafely" is used to indicate a 'Land on Earth' step is expected at the end. I haven't spotted SFS forgetting the progress for multiple (sequential) steps, but the vanilla challenges have a maximum of two steps with the second being 'Land on Earth'.
 
+---
 
-_Filter_
+__Filter__
+
 (all filter criteria must match)
 
 "isSignificant" : {bool value} (ignored if null)
@@ -180,8 +184,9 @@ _Filter_
 "primaries" : {string array value} (ignored if null)
 * Only include planets with a primary having these names, if omitted, primaries are not checked. Suffix a name with * to indicate any primary in the chain of primaries. e.g "Proxima Centauri*" indicates any body in the "Proxima Centauri" system
 
+---
 
-_Step_
+__Step__
 
 "planetName" : {string value} (required)
 * The name of the planet where this step is to be accomplished, not used for stepType="Multi" or "Any"
@@ -196,18 +201,15 @@ _Step_
 "stepType" : {string value} (required)
 * The type of step. Possible values:
 * "Multi" - all of the specified steps in any order
-    * note buggy - SFS seems to forget the progress in some cases.
     * does not support the "Impact" step type as a sub-step.
     
 * "Any" - any one of the specified steps
     * does not support the "Impact" step type as a sub-step.
 
 * "Any_Landmarks" - a number of landmarks in any order
-    * note buggy - SFS seems to forget the progress in some cases
-
 * "Downrange" - used if landed a minimum distance from the current(?) launch pad . Effect on planets without a current launchpad is unclear.
 * "Height" - used for altitude reached.
-* "Impact" - impact at a minumum velocity, unclear how this works
+* "Impact" - impact at a minimum velocity, unclear how this works
 * "Land" - land on this planet
 * "Orbit" - orbit this planet using SFS orbit classifications
 * "CustomOrbit" - orbit this planet with the specified orbital parameters. N.B. this does not appear to work for the Sun for some reason - will need expermentation.
@@ -218,10 +220,10 @@ _Step_
 * "Any":the list of steps, one of which must be accomplished
 
 "count" : {int value} (default 0)
-* only used for stepType="Any_Landmarks", the minimum number of landmarks that need to be landed on.
+* Only used for stepType="Any_Landmarks", the minimum number of landmarks that need to be landed on. If there are fewer landmarks on the planet indicates all landmarks.
 
 "downrange" : {string value with units} (default "")
-* Only used for stepType="Downrange", the mimimum distance from the launch site
+* Only used for stepType="Downrange", the mimimum distance from the launch site.
 
 "hasEngines" : {bool value} (default null)
 * Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". Test for the presence of engines or boosters.
@@ -233,10 +235,10 @@ _Step_
 * Only used for stepType="Impact". The mimimum velocity at impact in m/s.
 
 "minHeight" : {string value with units} (default "")
-* Only used for stepType="Height". The minimum altitude to be reached (useful for launches)
+* Only used for stepType="Height". The minimum altitude to be reached  (use a low value, e.g. 100, to detect a launch)
 
 "maxHeight" : {string value with units} (default "")
-* Only used for stepType="Height". The maximum altitude to be reached (useful for flybys)
+* Only used for stepType="Height". The maximum altitude to be reached  (useful for flybys)
 
 "minMass" : {double value} (default double.NaN)
 * Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". The minimum rocket mass in tonnes.
@@ -281,7 +283,7 @@ _Step_
 "minSma" : {string value with units} (default "")
 * Only used for stepType="CustomOrbit".The minimum semi-major axis.
 
-{string value with units> (used for downrange/height/periapsis/apoapsis/sma values), if the last character is a digit the value is the altitude/distance in meters, otherwise it should be one of:
+{string value with units} (used for downrange/height/periapsis/apoapsis/sma values), if the last character is a digit the value is the altitude/distance in meters, otherwise it should be one of:
 * "k" - for km altitude or distance
 * "m" - for Mm altitude or distance
 * "g" - for Gm altitude or distance
