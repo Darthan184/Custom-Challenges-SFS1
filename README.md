@@ -150,6 +150,9 @@ _Filter_
 "isSignificant" : {bool value} (ignored if null)
 * Only include if the planet 'is significant' flag has this value, if omitted, is not checked
 
+"hasLandmarks" : {bool value} (ignored if null)
+* Only include if the planet 'has any landmarks' has this value, if omitted, is not checked
+
 "hasSatellites" : {bool value} (ignored if null)
 * Only include if the planet 'has satellites' flag has this value, if omitted, is not checked
 

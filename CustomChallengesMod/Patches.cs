@@ -468,10 +468,23 @@ namespace CustomChallengesMod
                             {
                                 case "any_landmarks":
                                 {
+                                    if (onePlanet.data.landmarks==null || onePlanet.data.landmarks.Count==0)
+                                    {
+                                        throw new _InternalException
+                                        (
+                                            string.Format
+                                                (
+                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a stepType field of \"Any_Landmarks\" but planet \"{2}\" has no landmarks"
+                                                    , systemName
+                                                    , stepID
+                                                    ,onePlanet.codeName
+                                                )
+                                        );
+                                    }
                                     CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt oneOutputStep =
                                         new CustomChallengesMod.CustomSteps.Step_Any_LandmarksExt();
                                     oneOutputStep.planet=onePlanet;
-                                    oneOutputStep.count=oneInputStep.count;
+                                    oneOutputStep.count=System.Math.Min(oneInputStep.count, onePlanet.data.landmarks.Count);
                                     oneOutputStep.hasEngines=oneInputStep.hasEngines;
                                     oneOutputStep.minMass=oneInputStep.minMass;
                                     oneOutputStep.maxMass=oneInputStep.maxMass;
@@ -645,8 +658,9 @@ namespace CustomChallengesMod
         {
             if (filter==null) return true;
             if (filter.isSignificant!=null && filter.isSignificant!= planet.data.basics.significant) return false;
-            if (filter.hasTerrain!=null && filter.hasTerrain!=planet.data.hasTerrain) return false;
+            if (filter.hasLandmarks!=null && filter.hasLandmarks!=(planet.data.landmarks!=null && planet.data.landmarks.Count>0)) return false;
             if (filter.hasSatellites!=null && filter.hasSatellites!=(planet.satellites!=null && planet.satellites.Length>0)) return false;
+            if (filter.hasTerrain!=null && filter.hasTerrain!=planet.data.hasTerrain) return false;
             if (filter.logsLanded!=null && filter.logsLanded!=planet.data.logs.Landed) return false;
             if (filter.logsTakeoff!=null && filter.logsTakeoff!=planet.data.logs.Takeoff) return false;
             if (filter.logsAtmosphere!=null && filter.logsAtmosphere!=planet.data.logs.Atmosphere) return false;
