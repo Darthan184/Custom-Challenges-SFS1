@@ -45,7 +45,7 @@ namespace CustomChallengesMod
             public System.Collections.Generic.List<SFS.Logs.ChallengeStep> steps;
         }
 
-        /// <summary>Get a distance from the supplied values</summary>
+        /// <summary>Get a distance from the supplied value</summary>
         private static double GetDistance(SFS.WorldBase.Planet planet,string systemName, string stepID, string fieldName,string value)
         {
             value =value.Trim();
@@ -88,94 +88,241 @@ namespace CustomChallengesMod
             }
        }
 
-        /// <summary>Expand distance values within the supplied string</summary>
-        private static string ExpandDistances(SFS.WorldBase.Planet planet,string systemName, string stepID, string fieldName,string value)
+        /// <summary>Get a mass from the supplied value</summary>
+        private static double GetMass(SFS.WorldBase.Planet planet,string systemName, string stepID, string fieldName,string value)
         {
-            string input =value;
-            System.Text.StringBuilder output = new System.Text.StringBuilder();
+//~             double scale=System.Math.Exp(System.Math.Sqrt(difficulty.DefaultSmaScale*System.Math.Sqrt(difficulty.DryMassMultiplier))/difficulty.IspMultiplier-1);
+            double scale=1.0;
 
-            while(input.Length>0)
+            switch(SFS.Base.worldBase.settings.difficulty.difficulty)
             {
-                int start = input.IndexOf("[[");
-                int end = 0;
-                string[] distanceInputSplit = {};
-                double distance;
+                case SFS.WorldBase.Difficulty.DifficultyType.Hard: scale=2.0;break;
+                case SFS.WorldBase.Difficulty.DifficultyType.Realistic: scale=4.0;break;
+            }
 
-                if (start<0)
+            value =value.Trim();
+
+            if (value=="") return double.NaN;
+            if (value.Length==1) return double.Parse(value);
+
+            try
+            {
+                switch (value.Length>=3?value.Substring(value.Length-2).ToLower():"")
                 {
-                    output.Append(input);
-                    break;
-                }
+                    case "ln": return double.Parse(value.Substring(0,value.Length-2))*scale;
+                    case "on": return double.Parse(value.Substring(0,value.Length-2))/scale;
 
-                output.Append(input.Substring(0,start)); // everything left of "[["
-                input=input.Substring(start+2); // everything right of "[["
-
-                end = input.IndexOf("]]");
-
-                if (end<0)
-                {
-                    output.Append("[[" + input);
-                    break;
-                }
-
-
-                distanceInputSplit = input.Remove(end).Split(':'); // string between [[ and ]] split on ":"
-                input=input.Substring(end+2); // everything right of "]]"
-
-                if (distanceInputSplit.Length==0)
-                {
-                    continue;
-                }
-                else if (distanceInputSplit.Length==1)
-                {
-                    distance=GetDistance(planet,systemName,stepID,"[[...]] item in a " + fieldName,distanceInputSplit[0]);
-                }
-                else
-                {
-                    if (!SFS.Base.planetLoader.planets.ContainsKey(distanceInputSplit[1].Trim()))
-                    {
-                        throw new _InternalException
-                        (
-                            string.Format
-                                (
-                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a {2} field containing a [[..:..]] escape with a planet name referring to a non-existent planet \"{3}\""
-                                    ,systemName
-                                    , stepID
-                                    ,fieldName
-                                    ,distanceInputSplit[1].Trim()
-                                )
-                        );
-                    }
-                    distance=GetDistance
-                        (
-                            SFS.Base.planetLoader.planets[distanceInputSplit[1].Trim()]
-                            ,systemName
-                            ,stepID
-                            ,"[[...:...]] item in a " + fieldName
-                            ,distanceInputSplit[0].Trim()
-                        );
-                }
-
-                switch((int)System.Math.Floor(System.Math.Log10(distance)/3))
-                {
-                    case 1:output.AppendFormat("{0:G4} km", distance/1.0e3); break;
-                    case 2:output.AppendFormat("{0:G4} Mm", distance/1.0e6); break;
-                    case 3:output.AppendFormat("{0:G4} Gm", distance/1.0e9); break;
-                    case 4:output.AppendFormat("{0:G4} Tm", distance/1.0e12); break;
                     default:
-                        if (distance<1000)
+                        switch (value.Substring(value.Length-1).ToLower())
                         {
-                            output.AppendFormat("{0:G4} m", distance);
+                            case "k": return double.Parse(value.Substring(0,value.Length-1))*1e3;
+                            case "m": return double.Parse(value.Substring(0,value.Length-1))*1e6;
+                            case "g": return double.Parse(value.Substring(0,value.Length-1))*1e9;
+                            default: return double.Parse(value);
+                        }
+                }
+            }
+            catch
+            {
+                 throw new _InternalException
+                (
+                    string.Format
+                        (
+                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid {2} field: \"{3}\""
+                            , systemName
+                            , stepID
+                            , fieldName
+                            ,value
+                        )
+                );
+            }
+        }
+
+        /// <summary>Get a velocity from the supplied value</summary>
+        private static int GetVelocity(SFS.WorldBase.Planet planet,string systemName, string stepID, string fieldName,string value)
+        {
+            value =value.Trim();
+
+            if (value=="") return 0;
+            if (value.Length==1) return int.Parse(value);
+
+            try
+            {
+                if (value.Length>=3 && value.Substring(value.Length-2).ToLower()=="vn")
+                {
+                    return (int)
+                        (
+                            double.Parse(value.Substring(0,value.Length-2))
+                            *System.Math.Sqrt(SFS.Base.worldBase.settings.difficulty.DefaultSmaScale)
+                        );
+                }
+                else switch (value.Substring(value.Length-1).ToLower())
+                {
+                    case "k": return (int)(double.Parse(value.Substring(0,value.Length-1))*1000);
+                    case "m": return (int)(double.Parse(value.Substring(0,value.Length-1))*1000000);
+                    case "g": return (int)(double.Parse(value.Substring(0,value.Length-1))*1000000000);
+                    case "c": return (int)(double.Parse(value.Substring(0,value.Length-1))*299762458);
+                    default: return int.Parse(value);
+                }
+            }
+            catch
+            {
+                 throw new _InternalException
+                (
+                    string.Format
+                        (
+                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid {2} field: \"{3}\""
+                            , systemName
+                            , stepID
+                            , fieldName
+                            ,value
+                        )
+                );
+            }
+       }
+
+        /// <summary>Expand distance values within the supplied string</summary>
+        private static string ExpandValues(SFS.WorldBase.Planet planet,string systemName, string stepID, string fieldName,string value)
+        {
+            string traceID="T-01";
+
+            try
+            {
+                string input =value;
+                System.Text.StringBuilder output = new System.Text.StringBuilder();
+                // ###########
+//~                 UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.ExpandValues-I-01] {0}",input);
+                while(input.Length>0)
+                {
+                    int start = input.IndexOf("[[");
+                    int end = 0;
+                    string[] unitValueInputSplit = {};
+
+                    if (start<0)
+                    {
+                        output.Append(input);
+                        break;
+                    }
+
+                    output.Append(input.Substring(0,start)); // everything left of "[["
+                    traceID="T-02";
+                    input=input.Substring(start+2); // everything right of "[["
+                    traceID="T-03";
+
+                    end = input.IndexOf("]]");
+
+                    if (end<0)
+                    {
+                        output.Append("[[" + input);
+                        break;
+                    }
+
+                    unitValueInputSplit = input.Remove(end).Split(':'); // string between [[ and ]] split on ":"
+                    input=input.Substring(end+2); // everything right of "]]"
+                    traceID="T-04";
+
+                    if (unitValueInputSplit.Length==0)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        SFS.WorldBase.Planet selPlanet = planet;
+
+                        if (unitValueInputSplit.Length>=2)
+                        {
+                            if (!SFS.Base.planetLoader.planets.ContainsKey(unitValueInputSplit[1].Trim()))
+                            {
+                                throw new _InternalException
+                                (
+                                    string.Format
+                                        (
+                                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has a {2} field containing a [[..:..]] escape with a planet name referring to a non-existent planet \"{3}\""
+                                            ,systemName
+                                            , stepID
+                                            ,fieldName
+                                            ,unitValueInputSplit[1].Trim()
+                                        )
+                                );
+                            }
+                            selPlanet = SFS.Base.planetLoader.planets[unitValueInputSplit[1].Trim()];
+                        }
+
+                        if (unitValueInputSplit[0].ToLower().EndsWith("mk"))
+                        {
+                            output.AppendFormat("{0:N0}",System.Math.Min(int.Parse(unitValueInputSplit[0].Substring(0,unitValueInputSplit[0].Length-2)), selPlanet.data.landmarks.Count));
+                            traceID="T-05";
+                        }
+                        else if (unitValueInputSplit[0].ToLower().EndsWith("vn") || unitValueInputSplit[0].ToLower().EndsWith("c"))
+                        {
+                            int unitValue=GetVelocity(selPlanet,systemName,stepID,"[[...]] item in a " + fieldName,unitValueInputSplit[0]);
+
+                            switch((int)System.Math.Floor(System.Math.Log10(unitValue)))
+                            {
+                                case 3:
+                                case 4:
+                                case 5:
+                                    output.AppendFormat("{0:G4} km/s", unitValue/1.0e3);
+                                break;
+                                case 6:
+                                case 7:
+                                    output.AppendFormat("{0:G4} Mm/s", unitValue/1.0e6);
+                                break;
+                                default:
+                                    if (unitValue<1000)
+                                    {
+                                        output.AppendFormat("{0:G4} m/s", unitValue);
+                                    }
+                                    else
+                                    {
+                                        output.AppendFormat("{0:G4} c", unitValue/299762458.0);
+                                    }
+                                 break;
+                            }
+                        }
+                        else if (unitValueInputSplit[0].ToLower().EndsWith("n"))
+                        {
+                            double unitValue=GetMass(selPlanet,systemName,stepID,"[[...]] item in a " + fieldName,unitValueInputSplit[0]);
+
+                            switch((int)System.Math.Floor(System.Math.Log10(unitValue)/3))
+                            {
+                                case 0:output.AppendFormat("{0:G4} t", unitValue); break;
+                                case 1:output.AppendFormat("{0:G4} kt", unitValue/1.0e3); break;
+                                case 2:output.AppendFormat("{0:G4} Mt", unitValue/1.0e6); break;
+                                default:output.AppendFormat("{0:G4} Gt", unitValue/1.0e9); break;
+                            }
                         }
                         else
                         {
-                            output.AppendFormat("{0:G4} ly", distance/(86400.0*365.2425*299762458.0));
-                        }
-                     break;
-                }
-            }
+                            double unitValue=GetDistance(selPlanet,systemName,stepID,"[[...]] item in a " + fieldName,unitValueInputSplit[0]);
 
-            return output.ToString();
+                            switch((int)System.Math.Floor(System.Math.Log10(unitValue)/3))
+                            {
+                                case 1:output.AppendFormat("{0:G4} km", unitValue/1.0e3); break;
+                                case 2:output.AppendFormat("{0:G4} Mm", unitValue/1.0e6); break;
+                                case 3:output.AppendFormat("{0:G4} Gm", unitValue/1.0e9); break;
+                                case 4:output.AppendFormat("{0:G4} Tm", unitValue/1.0e12); break;
+                                default:
+                                    if (unitValue<1000)
+                                    {
+                                        output.AppendFormat("{0:G4} m", unitValue);
+                                    }
+                                    else
+                                    {
+                                        output.AppendFormat("{0:G4} ly", unitValue/(86400.0*365.2425*299762458.0));
+                                    }
+                                 break;
+                            }
+                        }
+                    }
+                }
+                return output.ToString();
+            }
+            catch (System.Exception excp)
+            {
+                UnityEngine.Debug.LogErrorFormat("[CustomChallengesMod.CollectChallenges.ExpandValues-{0}] {1}",traceID,excp.ToString());
+                return "";
+            }
         }
 
         /// <summary>Get the data for one challenge</summary>
@@ -242,7 +389,7 @@ namespace CustomChallengesMod
                     );
             }
 
-            string title=ExpandDistances
+            string title=ExpandValues
                 (
                     oneOutputChallenge.owner
                     ,systemName
@@ -271,7 +418,7 @@ namespace CustomChallengesMod
                     );
             }
 
-            string description=ExpandDistances
+            string description=ExpandValues
                 (
                     oneOutputChallenge.owner
                     ,systemName
@@ -486,8 +633,8 @@ namespace CustomChallengesMod
                                     oneOutputStep.planet=onePlanet;
                                     oneOutputStep.count=System.Math.Min(oneInputStep.count, onePlanet.data.landmarks.Count);
                                     oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                                    oneOutputStep.minMass=oneInputStep.minMass;
-                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    oneOutputStep.minMass=GetMass(onePlanet,systemName,stepID,"minMass",oneInputStep.minMass);
+                                    oneOutputStep.maxMass=GetMass(onePlanet,systemName,stepID,"maxMass",oneInputStep.maxMass);
                                     oneOutputStep.Depth = depth;
                                     outputSteps.Add(oneOutputStep);
                                 }
@@ -509,9 +656,9 @@ namespace CustomChallengesMod
                                     oneOutputStep.planet=onePlanet;
                                     oneOutputStep.hasEngines=oneInputStep.hasEngines;
                                     oneOutputStep.minHeight=GetDistance(onePlanet,systemName,stepID,"minHeight",oneInputStep.minHeight);
-                                    oneOutputStep.minMass=oneInputStep.minMass;
+                                    oneOutputStep.minMass=GetMass(onePlanet,systemName,stepID,"minMass",oneInputStep.minMass);
                                     oneOutputStep.maxHeight=GetDistance(onePlanet,systemName,stepID,"maxHeight",oneInputStep.maxHeight);
-                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    oneOutputStep.maxMass=GetMass(onePlanet,systemName,stepID,"maxMass",oneInputStep.maxMass);
                                     outputSteps.Add(oneOutputStep);
                                 }
                                 break;
@@ -520,7 +667,7 @@ namespace CustomChallengesMod
                                 {
                                     CustomChallengesMod.CustomSteps.Step_Impact oneOutputStep = new CustomChallengesMod.CustomSteps.Step_Impact();
                                     oneOutputStep.planet=onePlanet;
-                                    oneOutputStep.impactVelocity=oneInputStep.impactVelocity;
+                                    oneOutputStep.impactVelocity=GetVelocity(onePlanet,systemName,stepID,"impactVelocity",oneInputStep.impactVelocity);
                                     outputSteps.Add(oneOutputStep);
                                 }
                                 break;
@@ -531,8 +678,8 @@ namespace CustomChallengesMod
                                         new  CustomChallengesMod.CustomSteps.Step_LandExt();
                                     oneOutputStep.planet=onePlanet;
                                     oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                                    oneOutputStep.minMass=oneInputStep.minMass;
-                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    oneOutputStep.minMass=GetMass(onePlanet,systemName,stepID,"minMass",oneInputStep.minMass);
+                                    oneOutputStep.maxMass=GetMass(onePlanet,systemName,stepID,"maxMass",oneInputStep.maxMass);
                                     outputSteps.Add(oneOutputStep);
                                 }
                                 break;
@@ -546,13 +693,13 @@ namespace CustomChallengesMod
 
                                     oneOutputStep.maxApoapsis=GetDistance(onePlanet,systemName,stepID,"maxApoapsis",oneInputStep.maxApoapsis)+onePlanet.Radius;
                                     oneOutputStep.maxEcc=oneInputStep.maxEcc;
-                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    oneOutputStep.maxMass=GetMass(onePlanet,systemName,stepID,"maxMass",oneInputStep.maxMass);
                                     oneOutputStep.maxPeriapsis=GetDistance(onePlanet,systemName,stepID,"maxPeriapsis",oneInputStep.maxPeriapsis)+onePlanet.Radius;
                                     oneOutputStep.maxSma=GetDistance(onePlanet,systemName,stepID,"maxSma",oneInputStep.maxSma)+onePlanet.Radius;
 
                                     oneOutputStep.minApoapsis=GetDistance(onePlanet,systemName,stepID,"minApoapsis",oneInputStep.minApoapsis)+onePlanet.Radius;
                                     oneOutputStep.minEcc=oneInputStep.minEcc;
-                                    oneOutputStep.minMass=oneInputStep.minMass;
+                                    oneOutputStep.minMass=GetMass(onePlanet,systemName,stepID,"minMass",oneInputStep.minMass);
                                     oneOutputStep.minPeriapsis=GetDistance(onePlanet,systemName,stepID,"minPeriapsis",oneInputStep.minPeriapsis)+onePlanet.Radius;
                                     oneOutputStep.minSma=GetDistance(onePlanet,systemName,stepID,"minSma",oneInputStep.minSma)+onePlanet.Radius;
 
@@ -592,8 +739,8 @@ namespace CustomChallengesMod
                                     oneOutputStep.planet=onePlanet;
                                     oneOutputStep.orbit=outputOrbit;
                                     oneOutputStep.hasEngines=oneInputStep.hasEngines;
-                                    oneOutputStep.minMass=oneInputStep.minMass;
-                                    oneOutputStep.maxMass=oneInputStep.maxMass;
+                                    oneOutputStep.minMass=GetMass(onePlanet,systemName,stepID,"minMass",oneInputStep.minMass);
+                                    oneOutputStep.maxMass=GetMass(onePlanet,systemName,stepID,"maxMass",oneInputStep.maxMass);
                                     outputSteps.Add(oneOutputStep);
                                 }
                                 break;

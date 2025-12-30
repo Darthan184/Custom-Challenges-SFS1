@@ -88,6 +88,31 @@ An example of a Custom\_Challenges.txt. Note Custom\_Challenges.txt in the ![CC\
 
 Details for each field:
 
+__string value with units__
+
+(used for various values)
+
+ if the last character is a digit the value is the altitude/distance in meters, velocity in meters oe second or mass in tonnes, otherwise it should be one of:
+* "k" - for km altitude, distance; kt mass or km/s velocity
+* "m" - for Mm altitude, distance; Mt mass or Mm/s velocity
+* "g" - for Gm altitude, distance; Gt mass
+* "t" - for Tm altitude or distance
+* "l" - for light-years altitude or distance
+* "c" - for multiple of the speed of light for velocity
+
+planet-relative units:
+* "a" - for atmosphere height altitude or distance (if the planet has no atmosphere will use a maximum of max terrain height and timewarp height)
+* "r" - for planetary radius altitude or distance
+* "s" - SOI multiple distance from center (values should be <1) - not useful for distances?
+
+difficulty-scaled units:
+* "ln" - launch mass in tonnes relative to 'normal' difficulity
+* "on" - orbital mass in tonnes relative to 'normal' difficulity
+* "vn" - velocity in m/s relative to 'normal' difficulity
+
+other (used for display only)
+* "mk" number of landmarks, replaced with the number of landmarks the planet has if this is lower
+
 __Challenge__
 
 "id" : {string value} (required)
@@ -127,11 +152,10 @@ __Challenge__
 * indicates how to sort this challenge, is a small signed integer, higher numbers appear at the top of the list.
 
 "title" : {string value} (required if icon is supplied)
-* The title to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string like \[\[3A\]\] or \[\[0.5R:Moon\]\] , specifying planet-relative units will be replaced with a value in m, km, Mm, Gm, Tm or ly. The planet defaults to the one in ownerName. If the id contains "{planet}", a sub-string of "{planet}" will be replaced by the planet name and a sub-string of "{primary}" the name of the primary of the planet.
-
+* The title to be used, N.B. not automatically translated (the in-game ones are translated). A sub-string like \[\[3A\]\] or \[\[0.5R:Moon\]\] , specifying planet or difficulty-relative units will be replaced with a value in m, km, Mm, Gm, Tm, ly for distance units; t , kt, Mt, Gt, Tt for scaled mass units; m/s km/s, Mm/s, Gm/s and c .for scaled velocity units. The planet defaults to the one in ownerName. If the id contains "{planet}", a sub-string of "{planet}" will be replaced by the planet name and a sub-string of "{primary}" the name of the primary of the planet. N.B. units 'a','r','s', 'k','m','g','t' and 'l' are assumed to be distances/heights.
 
 "description" : {string value} (required if icon is supplied)
-* The description to be used, N.B. not automatically translated (the in-game ones are translated). If the id contains "{planet}", a sub-string of "{planet}" will be replaced by the planet name and a sub-string of "{primary}" the name of the primary of the planet.
+* The description to be used, N.B. not automatically translated (the in-game ones are translated). If the id contains "{planet}", a sub-string of "{planet}" will be replaced by the planet name and a sub-string of "{primary}" the name of the primary of the planet. Can include \[\[...\]\] values.
 
 "ownerName" : {string value} (required if icon is supplied and the id does not contain "{planet}")
 * The name of the planet that is the 'owner' of this challenge. This specifies the planet the challenge appears under.
@@ -231,7 +255,7 @@ __Step__
     * If false, rocket must not have engines or boosters. This can be used to test for a released payload. N.B. the payload needs to be the current rocket to detect this.
     * If omitted or null is not checked.
 
-"impactVelocity" : {int value} (default 0)
+"impactVelocity" : {string value with units} (default "")
 * Only used for stepType="Impact". The mimimum velocity at impact in m/s.
 
 "minHeight" : {string value with units} (default "")
@@ -240,12 +264,12 @@ __Step__
 "maxHeight" : {string value with units} (default "")
 * Only used for stepType="Height". The maximum altitude to be reached  (useful for flybys)
 
-"minMass" : {double value} (default double.NaN)
+"minMass" : {string value with units} (default "")
 * Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". The minimum rocket mass in tonnes.
     * If already in orbit (or landed) docking additional rockets can meet the challenge.
     * For "Any_Landmarks" the rocket mass is checked for ***all*** landings
 
-"maxMass" : {double value} (default double.NaN)
+"maxMass" : {string value with units} (default "")
 * Used for stepType="Height","Land","Orbit","CustomOrbit", "Any_Landmarks". The maximum rocket mass in tonnes.
     * With "Height" and a low value can be used to specify a maximum launch mass.
     * For "Any_Landmarks" the rocket mass is checked for ***all*** landings
@@ -282,18 +306,6 @@ __Step__
 
 "minSma" : {string value with units} (default "")
 * Only used for stepType="CustomOrbit".The minimum semi-major axis.
-
-{string value with units} (used for downrange/height/periapsis/apoapsis/sma values), if the last character is a digit the value is the altitude/distance in meters, otherwise it should be one of:
-* "k" - for km altitude or distance
-* "m" - for Mm altitude or distance
-* "g" - for Gm altitude or distance
-* "t" - for Tm altitude or distance
-* "l" - for light-years altitude or distance
-
-planet-relative units:
-* "a" - for atmosphere height altitude or distance (if the planet has no atmosphere will use a maximum of max terrain height and timewarp height)
-* "r" - for planetary radius altitude or distance
-* "s" - SOI multiple distance from center (values should be <1) - not useful for distances?
 
 ## Settings
 

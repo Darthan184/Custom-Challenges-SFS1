@@ -122,19 +122,19 @@
             /// <summary>
             /// Only used for stepType="Impact". The mimimum velocity at impact in m/s.
             /// </summary>
-            public int impactVelocity=0;
+            public string impactVelocity="";
 
             /// <summary>
             /// Used for stepType="Height","Land","Orbit","CustomOrbit","Any_Landmarks". The minimum rocket mass in tonnes. N.B. If already in orbit
             /// (or landed) docking additional rockets can meet the challenge.
             /// </summary>
-            public double minMass=double.NaN;
+            public string minMass="";
 
             /// <summary>
             /// Used for stepType="Height","Land","Orbit","CustomOrbit". The maximum rocket mass in tonnes. With "Height" and a low
             /// value can be used to specify a maximum launch mass.
             /// </summary>
-            public double maxMass=double.NaN;
+            public string maxMass="";
 
             /// <summary>
             /// Only used for stepType="Orbit". The type of orbit the needs to be reached. Possible values:

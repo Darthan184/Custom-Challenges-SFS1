@@ -112,9 +112,8 @@
         ,"icon": "Reach_Orbit"
         ,"priority":-1
         ,"title":"Heavy Payload To Low Earth Orbit"
-        ,"description":"Release a payload of at least 800 tonnes in low Earth orbit (Atlas challenge)"
+        ,"description":"Release a payload of at least [[800on]] in low Earth orbit (Atlas challenge)"
         ,"ownerName":"Earth"
-        ,"difficulty":"Normal"
         ,"challengeDifficulty": "Hard"
         ,"returnSafely": false
         ,"steps":
@@ -124,48 +123,7 @@
                     ,"stepType":"Orbit"
                     ,"orbitType": "Low"
                     ,"hasEngines": false
-                    ,"minMass": 800
-                }
-            ]
-    }
-    ,{
-        "id":"LEO_Heavy"
-        ,"icon": "Reach_Orbit"
-        ,"priority":-1
-        ,"title":"Heavy Payload To Low Earth Orbit"
-        ,"description":"Release a payload of at least 400 tonnes in low Earth orbit"
-        ,"ownerName":"Earth"
-        ,"difficulty":"Hard"
-        ,"challengeDifficulty": "Hard"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Earth"
-                    ,"stepType":"Orbit"
-                    ,"orbitType": "Low"
-                    ,"hasEngines": false
-                    ,"minMass": 400
-                }
-            ]
-    }
-    ,{
-        "id":"LEO_Heavy"
-        ,"icon": "Reach_Orbit"
-        ,"priority":-1
-        ,"title":"Heavy Payload To Low Earth Orbit"
-        ,"description":"Release a payload of at least 150 tonnes in low Earth orbit"
-        ,"ownerName":"Earth"
-        ,"difficulty":"Realistic"
-        ,"challengeDifficulty": "Hard"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Earth"
-                    ,"stepType":"Orbit"
-                    ,"orbitType": "Low"
-                    ,"minMass": 150
+                    ,"minMass": "800on"
                 }
             ]
     }
@@ -174,9 +132,8 @@
         ,"icon": "SystemEscape.png"
         ,"priority":-1
         ,"title":"Escape Solar System"
-        ,"description":"Send a payload to escape the solar system using a launcher between 100t and 300t (Voyager Quest)"
+        ,"description":"Send a payload to escape the solar system using a launcher between [[100ln]] and [[300ln]] (Voyager Quest)"
         ,"ownerName":"Sun"
-        ,"difficulty":"Normal"
         ,"challengeDifficulty": "Medium"
         ,"returnSafely": false
         ,"steps":
@@ -185,67 +142,13 @@
                     "planetName":"Earth"
                     ,"stepType":"Height"
                     ,"minHeight": 100
-                    ,"minMass": 100
-                    ,"maxMass": 300
+                    ,"minMass": "100ln"
+                    ,"maxMass": "300ln"
                 }
                 ,{
                     "planetName":"Sun"
                     ,"stepType":"Orbit"
                     ,"hasEngines": false
-                    ,"orbitType": "Esc"
-                }
-            ]
-    }
-    ,{
-        "id":"SolarEscape"
-        ,"icon": "SystemEscape.png"
-        ,"priority":-1
-        ,"title":"Escape Solar System"
-        ,"description":"Send a payload to escape the solar system using a launcher between 200t and 600t"
-        ,"ownerName":"Sun"
-        ,"difficulty":"Hard"
-        ,"challengeDifficulty": "Medium"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Earth"
-                    ,"stepType":"Height"
-                    ,"minHeight": 100
-                    ,"minMass": 200
-                    ,"maxMass": 600
-                }
-                ,{
-                    "planetName":"Sun"
-                    ,"stepType":"Orbit"
-                    ,"hasEngines": false
-                    ,"orbitType": "Esc"
-                }
-            ]
-    }
-    ,{
-        "id":"SolarEscape"
-        ,"icon": "SystemEscape.png"
-        ,"priority":-1
-        ,"title":"Escape Solar System"
-        ,"description":"Send a payload to escape the solar system using a launcher between 600t and 1800t"
-        ,"ownerName":"Sun"
-        ,"difficulty":"Realistic"
-        ,"challengeDifficulty": "Medium"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Earth"
-                    ,"stepType":"Height"
-                    ,"hasEngines": false
-                    ,"minHeight": 100
-                    ,"minMass": 600
-                    ,"maxMass": 1800
-                }
-                ,{
-                    "planetName":"Sun"
-                    ,"stepType":"Orbit"
                     ,"orbitType": "Esc"
                 }
             ]
@@ -273,9 +176,8 @@
         ,"icon": "Land_One_Way"
         ,"priority":-1
         ,"title":"Heavy Payload To The Moon"
-        ,"description":"Land at least 500 tonnes on the Moon"
+        ,"description":"Land at least [500on]] on the Moon"
         ,"ownerName":"Moon"
-        ,"difficulty":"Normal"
         ,"challengeDifficulty": "Hard"
         ,"returnSafely": false
         ,"steps":
@@ -283,45 +185,7 @@
                 {
                     "planetName":"Moon"
                     ,"stepType":"Land"
-                    ,"minMass": 500
-                }
-            ]
-    }
-    ,{
-        "id":"Moon_Land_Heavy"
-        ,"icon": "Land_One_Way"
-        ,"priority":-1
-        ,"title":"Heavy Payload To The Moon"
-        ,"description":"Land at least 250 tonnes on the Moon"
-        ,"ownerName":"Moon"
-        ,"difficulty":"Hard"
-        ,"challengeDifficulty": "Hard"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Moon"
-                    ,"stepType":"Land"
-                    ,"minMass": 250
-                }
-            ]
-    }
-    ,{
-        "id":"Moon_Land_Heavy"
-        ,"icon": "Land_One_Way"
-        ,"priority":-1
-        ,"title":"Heavy Payload To The Moon"
-        ,"description":"Land at least 100 tonnes on the Moon"
-        ,"ownerName":"Moon"
-        ,"difficulty":"Realistic"
-        ,"challengeDifficulty": "Hard"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Moon"
-                    ,"stepType":"Land"
-                    ,"minMass": 100
+                    ,"minMass": "500on"
                 }
             ]
     }
@@ -344,13 +208,30 @@
             ]
     }
     ,{
-        "id":"Europa_Below100t"
+        "id":"Asteroid_Crash"
+        ,"icon": "Crash"
+        ,"priority":1
+        ,"title":"Captured Asteroid Impact"
+        ,"description":"Impact the captured asteroid at a speed of at least [[200vn]]."
+        ,"ownerName":"Near_Earth_Asteroid"
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"Near_Earth_Asteroid"
+                    ,"stepType":"Impact"
+                    ,"impactVelocity": "200vn"
+                }
+            ]
+    }
+    ,{
+        "id":"Europa_LowMass"
         ,"icon": "Capture"
         ,"priority":-1
-        ,"title":"Reach low Europa orbit under 100t"
-        ,"description":"Reach low Europa orbit using a rocket no heavier than 100 tonnes"
+        ,"title":"Reach low Europa orbit under [[100ln]]"
+        ,"description":"Reach low Europa orbit using a rocket no heavier than [[100ln]]"
         ,"ownerName":"Europa"
-        ,"difficulty":"Normal"
         ,"challengeDifficulty": "Extreme"
         ,"returnSafely": false
         ,"steps":
@@ -359,7 +240,7 @@
                     "planetName":"Earth"
                     ,"stepType":"Height"
                     ,"minHeight": 100
-                    ,"maxMass": 100
+                    ,"maxMass": "100ln"
                 }
                 ,{
                     "planetName":"Europa"
