@@ -61,20 +61,24 @@
         ,"icon": "Tour"
         ,"priority":-1
         ,"title":"Surface tour of {planet}"
-        ,"description":"Land on at least three different landmarks of {planet} (or all landmarks if less than three) and return safely"
+        ,"description":"Land on at least [[3mk]] different landmarks of {planet} and return safely to Earth"
         ,"filter":
             {
                 "hasLandmarks":true
                 ,"exclude":["Earth","Moon","Sun"]
             }
         ,"challengeDifficulty": "Extreme"
-        ,"returnSafely": false
+        ,"returnSafely": true
         ,"steps":
             [
                 {
                     "planetName":"{planet}"
                     ,"stepType":"Any_Landmarks"
                     ,"count":3
+                }
+                ,{
+                    "planetName":"Earth"
+                    ,"stepType":"Land"
                 }
             ]
     }
