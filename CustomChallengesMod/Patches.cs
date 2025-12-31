@@ -805,8 +805,8 @@ namespace CustomChallengesMod
         {
             if (filter==null) return true;
             if (filter.isSignificant!=null && filter.isSignificant!= planet.data.basics.significant) return false;
-            if (filter.hasLandmarks!=null && filter.hasLandmarks!=(planet.data.landmarks!=null && planet.data.landmarks.Count>0)) return false;
-            if (filter.hasSatellites!=null && filter.hasSatellites!=(planet.satellites!=null && planet.satellites.Length>0)) return false;
+            if (filter.hasLandmarks!=null && filter.hasLandmarks!=(planet.data.landmarks!=null && planet.data.landmarks.Count>1)) return false;
+            if (filter.hasSatellites!=null && filter.hasSatellites!=(planet.satellites!=null && planet.satellites.Length>1)) return false;
             if (filter.hasTerrain!=null && filter.hasTerrain!=planet.data.hasTerrain) return false;
             if (filter.logsLanded!=null && filter.logsLanded!=planet.data.logs.Landed) return false;
             if (filter.logsTakeoff!=null && filter.logsTakeoff!=planet.data.logs.Takeoff) return false;
@@ -938,160 +938,173 @@ namespace CustomChallengesMod
                     foreach (CustomChallengesMod.CustomChallengesData oneInputChallenge in custom_Challenges)
                     {
                         itemNo++;
-                        try
+//~                         if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-D-01] item:{0:D}", itemNo);
+
+                        if (oneInputChallenge!=null)
                         {
-                            bool canAdd=false;
-
-                            if (oneInputChallenge.id.Trim()=="")
+                            try
                             {
-                                throw new _InternalException
-                                (
-                                    string.Format
-                                        (
-                                            "Solar system \"{0}\" Custom_Challenges.txt file item #{1:N0} has a missing id field"
-                                            ,solarSystem.name
-                                            ,itemNo
-                                        )
-                                );
-                            }
+                                bool canAdd=false;
 
-                            string inputIcon= oneInputChallenge.icon.Trim();
-                            UnityEngine.Sprite outputIcon = null;
+//~                                 if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-D-01a] id:\"{0}\"", oneInputChallenge.id);
 
-                            switch (inputIcon.ToLower())
-                            {
-                                case "":outputIcon=null;break;
-                                case "firstflight":outputIcon=challengeIcons.firstFlight;break;
-                                case "10km":outputIcon=challengeIcons.icon_10Km;break;
-                                case "30km":outputIcon=challengeIcons.icon_30Km;break;
-                                case "50km":outputIcon=challengeIcons.icon_50Km;break;
-                                case "downrange":outputIcon=challengeIcons.icon_Downrange;break;
-                                case "reach_orbit":outputIcon=challengeIcons.icon_Reach_Orbit;break;
-                                case "orbit_high":outputIcon=challengeIcons.icon_Orbit_High;break;
-                                case "capture":outputIcon=challengeIcons.icon_Capture;break;
-                                case "tour":outputIcon=challengeIcons.icon_Tour;break;
-                                case "crash":outputIcon=challengeIcons.icon_Crash;break;
-                                case "land_one_way":outputIcon=challengeIcons.icon_UnmannedLanding;break;
-                                case "land_return":outputIcon=challengeIcons.icon_MannedLanding;break;
-                                default:
+                                if (string.IsNullOrWhiteSpace(oneInputChallenge.id))
                                 {
-                                    if (inputIcon.ToLower().EndsWith(".png"))
-                                    {
-                                        outputIcon=LoadNewSprite
+                                    throw new _InternalException
+                                    (
+                                        string.Format
                                             (
-                                                FileLocations.SolarSystemsFolder.Extend(solarSystem.name)
-                                                    .ExtendToFile("Custom_Challenge_Icons/" + inputIcon)
-                                            );
-
-                                        if (outputIcon==null)
-                                        {
-                                            UnityEngine.Debug.LogFormat
-                                                (
-                                                    "Solar system \"{0}\" Custom_Challenges.txt file id:{1} cannot find icon file: \"{2}\""
-                                                    ,solarSystem.name
-                                                    ,oneInputChallenge.id
-                                                    ,"Custom_Challenge_Icons/" + inputIcon
-                                                );
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        throw new _InternalException
-                                            (
-                                                string.Format
-                                                    (
-                                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid icon field: \"{2}\""
-                                                        ,solarSystem.name
-                                                        ,oneInputChallenge.id
-                                                        ,inputIcon
-                                                    )
-                                            );
-                                    }
+                                                "Solar system \"{0}\" Custom_Challenges.txt file item #{1:N0} has a missing id field"
+                                                ,solarSystem.name
+                                                ,itemNo
+                                            )
+                                    );
                                 }
-                                break;
-                            }
 
-                            if (SFS.Base.worldBase!=null && SFS.Base.worldBase.settings!=null && SFS.Base.worldBase.settings.difficulty!=null)
-                            {
-                                switch (SFS.Base.worldBase.settings.difficulty.difficulty)
+                                string inputIcon= oneInputChallenge.icon.Trim();
+                                UnityEngine.Sprite outputIcon = null;
+
+                                switch (inputIcon.ToLower())
                                 {
-                                    case SFS.WorldBase.Difficulty.DifficultyType.Normal:
-                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="normal" );
-                                    break;
-
-                                    case SFS.WorldBase.Difficulty.DifficultyType.Hard:
-                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="hard" );
-                                    break;
-
-                                    case SFS.WorldBase.Difficulty.DifficultyType.Realistic:
-                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="realistic" );
-                                    break;
-
+                                    case "":outputIcon=null;break;
+                                    case "firstflight":outputIcon=challengeIcons.firstFlight;break;
+                                    case "10km":outputIcon=challengeIcons.icon_10Km;break;
+                                    case "30km":outputIcon=challengeIcons.icon_30Km;break;
+                                    case "50km":outputIcon=challengeIcons.icon_50Km;break;
+                                    case "downrange":outputIcon=challengeIcons.icon_Downrange;break;
+                                    case "reach_orbit":outputIcon=challengeIcons.icon_Reach_Orbit;break;
+                                    case "orbit_high":outputIcon=challengeIcons.icon_Orbit_High;break;
+                                    case "capture":outputIcon=challengeIcons.icon_Capture;break;
+                                    case "tour":outputIcon=challengeIcons.icon_Tour;break;
+                                    case "crash":outputIcon=challengeIcons.icon_Crash;break;
+                                    case "land_one_way":outputIcon=challengeIcons.icon_UnmannedLanding;break;
+                                    case "land_return":outputIcon=challengeIcons.icon_MannedLanding;break;
                                     default:
-                                        canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
-                            }
-
-                            if (canAdd)
-                            {
-                                if (oneInputChallenge.id.Contains("{planet}"))
-                                {
-                                    foreach (SFS.WorldBase.Planet onePlanet in SFS.Base.planetLoader.planets.Values)
                                     {
-                                        if (MatchesFilter(onePlanet,oneInputChallenge.filter))
+                                        if (inputIcon.ToLower().EndsWith(".png"))
                                         {
-                                            _ChallengeIntermediate oneOutputChallenge;
+                                            outputIcon=LoadNewSprite
+                                                (
+                                                    FileLocations.SolarSystemsFolder.Extend(solarSystem.name)
+                                                        .ExtendToFile("Custom_Challenge_Icons/" + inputIcon)
+                                                );
 
                                             if (outputIcon==null)
                                             {
-                                                oneOutputChallenge=new _ChallengeIntermediate();
-                                                oneOutputChallenge.id=oneInputChallenge.id.Trim().Replace("{planet}", onePlanet.codeName);
+                                                UnityEngine.Debug.LogFormat
+                                                    (
+                                                        "Solar system \"{0}\" Custom_Challenges.txt file id:{1} cannot find icon file: \"{2}\""
+                                                        ,solarSystem.name
+                                                        ,oneInputChallenge.id
+                                                        ,"Custom_Challenge_Icons/" + inputIcon
+                                                    );
                                             }
-                                            else
-                                            {
-                                                oneOutputChallenge=GetChallenge(solarSystem.name, oneInputChallenge, sequenceNo++,onePlanet);
-                                            }
-                                            oneOutputChallenge.icon=outputIcon;
-                                            outputChallenges.Add(oneOutputChallenge);
+
                                         }
+                                        else
+                                        {
+                                            throw new _InternalException
+                                                (
+                                                    string.Format
+                                                        (
+                                                            "Solar system \"{0}\" Custom_Challenges.txt file id:{1} has an invalid icon field: \"{2}\""
+                                                            ,solarSystem.name
+                                                            ,oneInputChallenge.id
+                                                            ,inputIcon
+                                                        )
+                                                );
+                                        }
+                                    }
+                                    break;
+                                }
+
+//~                                 if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-D-02] item:{0:D} outputIcon:\"{1}\"",itemNo,outputIcon);
+
+                                if (SFS.Base.worldBase!=null && SFS.Base.worldBase.settings!=null && SFS.Base.worldBase.settings.difficulty!=null)
+                                {
+                                    switch (SFS.Base.worldBase.settings.difficulty.difficulty)
+                                    {
+                                        case SFS.WorldBase.Difficulty.DifficultyType.Normal:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="normal" );
+                                        break;
+
+                                        case SFS.WorldBase.Difficulty.DifficultyType.Hard:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="hard" );
+                                        break;
+
+                                        case SFS.WorldBase.Difficulty.DifficultyType.Realistic:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all" || oneInputChallenge.difficulty.ToLower()=="realistic" );
+                                        break;
+
+                                        default:
+                                            canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
+                                        break;
                                     }
                                 }
                                 else
                                 {
-                                    _ChallengeIntermediate oneOutputChallenge;
-                                    if (outputIcon==null)
+                                    canAdd=(oneInputChallenge.difficulty.ToLower()=="all");
+                                }
+
+//~                                 if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-D-03] item:{0:D} canAdd:\"{1}\"",itemNo,canAdd);
+
+                                if (canAdd)
+                                {
+                                    if (oneInputChallenge.id.Contains("{planet}"))
                                     {
-                                        oneOutputChallenge=new _ChallengeIntermediate();
-                                        oneOutputChallenge.id=oneInputChallenge.id;
+                                        foreach (SFS.WorldBase.Planet onePlanet in SFS.Base.planetLoader.planets.Values)
+                                        {
+                                            if (MatchesFilter(onePlanet,oneInputChallenge.filter))
+                                            {
+                                                _ChallengeIntermediate oneOutputChallenge;
+
+                                                if (outputIcon==null)
+                                                {
+                                                    oneOutputChallenge=new _ChallengeIntermediate();
+                                                    oneOutputChallenge.id=oneInputChallenge.id.Trim().Replace("{planet}", onePlanet.codeName);
+                                                }
+                                                else
+                                                {
+                                                    oneOutputChallenge=GetChallenge(solarSystem.name, oneInputChallenge, sequenceNo++,onePlanet);
+                                                }
+                                                oneOutputChallenge.icon=outputIcon;
+                                                outputChallenges.Add(oneOutputChallenge);
+//~                                                 if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-D-04] item:{0:D} added id:\"{1}\"",itemNo,oneOutputChallenge.id);
+                                            }
+                                        }
                                     }
                                     else
                                     {
-                                        oneOutputChallenge=GetChallenge(solarSystem.name, oneInputChallenge, sequenceNo++);
-                                    }
-                                    oneOutputChallenge.icon=outputIcon;
-                                    outputChallenges.Add(oneOutputChallenge);
+                                        _ChallengeIntermediate oneOutputChallenge;
+                                        if (outputIcon==null)
+                                        {
+                                            oneOutputChallenge=new _ChallengeIntermediate();
+                                            oneOutputChallenge.id=oneInputChallenge.id;
+                                        }
+                                        else
+                                        {
+                                            oneOutputChallenge=GetChallenge(solarSystem.name, oneInputChallenge, sequenceNo++);
+                                        }
+                                        oneOutputChallenge.icon=outputIcon;
+                                        outputChallenges.Add(oneOutputChallenge);
+//~                                         if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-D-05] item:{0:D} added id:\"{1}\"",itemNo,oneOutputChallenge.id);
+                                   }
                                 }
                             }
-                        }
-                        catch (_InternalException excp)
-                        {
-                            UnityEngine.Debug.LogErrorFormat("[CustomChallengesMod.CollectChallenges.Postfix] {0}",excp.Message);
+                            catch (_InternalException excp)
+                            {
+                                UnityEngine.Debug.LogErrorFormat("[CustomChallengesMod.CollectChallenges.Postfix] {0}",excp.Message);
+                            }
                         }
                     }
 
-                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-02] {0:N0} challenge definitions generated", outputChallenges.Count);
-                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-03] {0:N0} challenges before merging", challengesById.Count);
+                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-03] {0:N0} challenge definitions generated", outputChallenges.Count);
+                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-04] {0:N0} challenges before merging", challengesById.Count);
 
                     // merge the challenges with the vanilla challenge list
                     foreach (_ChallengeIntermediate oneOutputChallenge in outputChallenges)
                     {
-//~                         if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-04] id={0} icon={1}", oneOutputChallenge.id,oneOutputChallenge.icon);
+//~                         if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-05] id={0} icon={1}", oneOutputChallenge.id,oneOutputChallenge.icon);
 
                         if (oneOutputChallenge.icon!=null)
                         {
@@ -1110,16 +1123,16 @@ namespace CustomChallengesMod
 
                             // by setting returnSafely=false in the constructor and setting it here instead prevent to automatic land on earth step from being generated
                             challengesById[oneOutputChallenge.id].returnSafely = oneOutputChallenge.returnSafely;
-//~                             if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-05] updating id={0}", oneOutputChallenge.id);
+//~                             if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-06] updating id={0}", oneOutputChallenge.id);
                         }
                         else if (challengesById.ContainsKey(oneOutputChallenge.id))
                         {
-//~                             if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-06] removing id={0}", oneOutputChallenge.id);
+//~                             if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-07] removing id={0}", oneOutputChallenge.id);
                             challengesById.Remove(oneOutputChallenge.id);
                         }
                     }
 
-                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-07] {0:N0} challenges after merging", challengesById.Count);
+                    if (debug) UnityEngine.Debug.LogFormat("[CustomChallengesMod.CollectChallenges.Postfix-I-08] {0:N0} challenges after merging", challengesById.Count);
                 }
                 traceID="T-04";
                 __result.Clear();

@@ -1,35 +1,123 @@
 [
     {
-        "id":"NearEarth_Tour"
+        "id":"Asteroid_Crash"
+    }
+    ,{
+        "id":"{planet}_CloseFlyby"
         ,"icon": "flyby.png"
-        ,"priority":0
-        ,"title":"Moon and asteroid flyby"
-        ,"description":"Flyby both the Moon and the captured asteroid"
-        ,"ownerName":"Earth"
+        ,"priority":2
+        ,"title":"{planet} Flyby"
+        ,"description":"Flyby {planet} within [[2A]]"
+        ,"filter":
+            {
+                "exclude":["Earth"]
+            }
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"{planet}"
+                    ,"stepType":"Height"
+                    ,"maxHeight": "2A"
+                }
+            ]
+    }
+    ,{
+        "id":"{planet}_Crash"
+        ,"icon": "Crash"
+        ,"priority":1
+        ,"title":"{planet} Impact"
+        ,"description":"Impact {planet} at a speed of at least [[200vn]]."
+        ,"filter":
+            {
+                "exclude":["Earth"]
+                ,"isSignificant":false
+                ,"hasTerrain":true
+            }
+        ,"challengeDifficulty": "Medium"
+        ,"returnSafely": false
+        ,"steps":
+            [
+                {
+                    "planetName":"{planet}"
+                    ,"stepType":"Impact"
+                    ,"impactVelocity": "200vn"
+                }
+            ]
+    }
+    ,{
+        "id":"{planet}_Orbit"
+        ,"icon": "Capture"
+        ,"priority":1
+        ,"title":"{planet} Orbit"
+        ,"description":"Capture into low {planet} orbit, and return safely"
+        ,"filter":
+            {
+                "exclude":["Earth","Moon"]
+            }
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": true
+        ,"steps":
+            [
+                {
+                    "planetName":"{planet}"
+                    ,"stepType": "Orbit"
+                    ,"orbitType": "Low"
+                }
+            ]
+    }
+    ,{
+        "id":"{planet}_Colony"
+        ,"icon": "Land_One_Way"
+        ,"priority":-1
+        ,"title":"Colonise {planet}"
+        ,"description":"Land a colony weighing at least 100t on {planet}"
+        ,"filter":
+            {
+                "isSignificant":true
+                ,"hasTerrain":true
+                ,"logsLanded":true
+                ,"exclude":["Earth","Jupiter"]
+            }
         ,"challengeDifficulty": "Hard"
         ,"returnSafely": false
         ,"steps":
             [
                 {
-                    "stepType":"Multi"
-                    ,"steps":
-                        [
-                            {
-                                "planetName":"Moon"
-                                ,"stepType":"Orbit"
-                                ,"orbitType":"Esc"
-                            }
-                            ,{
-                                "planetName":"Near_Earth_Asteroid"
-                                ,"stepType":"Orbit"
-                                ,"orbitType":"Esc"
-                            }
-                        ]
+                    "planetName":"{planet}"
+                    ,"stepType":"Land"
+                    ,"minMass": 100
                 }
             ]
     }
     ,{
-        "id":"Flyby_{planet}_Moons"
+        "id":"{planet}_Landmarks"
+        ,"icon": "Tour"
+        ,"priority":-2
+        ,"title":"Surface tour of {planet}"
+        ,"description":"Land on at least [[3mk]] different landmarks of {planet} and return safely"
+        ,"filter":
+            {
+                "hasLandmarks":true
+                ,"isSignificant":true
+                ,"hasTerrain":true
+                ,"logsLanded":true
+                ,"exclude":["Earth"]
+            }
+        ,"challengeDifficulty": "Extreme"
+        ,"returnSafely": true
+        ,"steps":
+            [
+                {
+                    "planetName":"{planet}"
+                    ,"stepType":"Any_Landmarks"
+                    ,"count":3
+                }
+            ]
+    }
+    ,{
+        "id":"{planet}_Flyby_Moons"
         ,"icon": "flyby.png"
         ,"priority":0
         ,"title":"Flyby Moons of {planet}"
@@ -57,28 +145,31 @@
             ]
     }
     ,{
-        "id":"{planet}_Landmarks"
-        ,"icon": "Tour"
-        ,"priority":-1
-        ,"title":"Surface tour of {planet}"
-        ,"description":"Land on at least [[3mk]] different landmarks of {planet} and return safely to Earth"
-        ,"filter":
-            {
-                "hasLandmarks":true
-                ,"exclude":["Earth","Moon","Sun"]
-            }
-        ,"challengeDifficulty": "Extreme"
-        ,"returnSafely": true
+        "id":"NearEarth_Tour"
+        ,"icon": "flyby.png"
+        ,"priority":0
+        ,"title":"Moon and asteroid flyby"
+        ,"description":"Flyby both the Moon and the captured asteroid"
+        ,"ownerName":"Earth"
+        ,"challengeDifficulty": "Hard"
+        ,"returnSafely": false
         ,"steps":
             [
                 {
-                    "planetName":"{planet}"
-                    ,"stepType":"Any_Landmarks"
-                    ,"count":3
-                }
-                ,{
-                    "planetName":"Earth"
-                    ,"stepType":"Land"
+                    "stepType":"Multi"
+                    ,"steps":
+                        [
+                            {
+                                "planetName":"Moon"
+                                ,"stepType":"Orbit"
+                                ,"orbitType":"Esc"
+                            }
+                            ,{
+                                "planetName":"Near_Earth_Asteroid"
+                                ,"stepType":"Orbit"
+                                ,"orbitType":"Esc"
+                            }
+                        ]
                 }
             ]
     }
@@ -158,24 +249,6 @@
             ]
     }
     ,{
-        "id":"Moon_CloseFlyby"
-        ,"icon": "flyby.png"
-        ,"priority":1
-        ,"title":"Moon flyby within [[2A]]"
-        ,"description":"Flyby the moon within [[2A]]"
-        ,"ownerName":"Moon"
-        ,"challengeDifficulty": "Medium"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Moon"
-                    ,"stepType":"Height"
-                    ,"maxHeight": "2A"
-                }
-            ]
-    }
-    ,{
         "id":"Moon_Land_Heavy"
         ,"icon": "Land_One_Way"
         ,"priority":-1
@@ -208,24 +281,6 @@
                     "planetName":"Moon"
                     ,"stepType":"Any_Landmarks"
                     ,"count": 2
-                }
-            ]
-    }
-    ,{
-        "id":"Asteroid_Crash"
-        ,"icon": "Crash"
-        ,"priority":1
-        ,"title":"Captured Asteroid Impact"
-        ,"description":"Impact the captured asteroid at a speed of at least [[200vn]]."
-        ,"ownerName":"Near_Earth_Asteroid"
-        ,"challengeDifficulty": "Medium"
-        ,"returnSafely": false
-        ,"steps":
-            [
-                {
-                    "planetName":"Near_Earth_Asteroid"
-                    ,"stepType":"Impact"
-                    ,"impactVelocity": "200vn"
                 }
             ]
     }
