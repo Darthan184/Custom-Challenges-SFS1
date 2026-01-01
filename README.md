@@ -8,6 +8,8 @@ The mod adds support for custom challenges to custom solar systems. In addition 
 
 This mod (should) fix the bugs in the challenge system in SFS - the Moon Tour and Mars Tour challenges should now work correctly (i.e. even with docking and loading from a quicksave). This will apply to the vanilla challlenges even if a "Custom_Challenges.txt" file is not provided. I've tested this, but the error cases were a bit difficult to identify, other bugs may still lurk.
 
+Changing custom challenges in a custom system that is use by an existing world should be done with caution. Added challenges will not count previous missions. Removing existing completed or 'in progress' challenges can cause SFS bugs - one I spotted caused a rocket to disappear on launch - F1 will show a null reference error. Amending existing completed or 'in progress' challenges is likely do something similar.
+
 To specify custom challenges you need to add a Custom\_Challenges.txt file and possibly a Custom\_Challenge\_Icons directory if you want to add your own challenge icons:
 
 ![File Directory](images/directory.png)
