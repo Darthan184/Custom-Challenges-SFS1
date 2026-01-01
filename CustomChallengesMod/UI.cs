@@ -46,22 +46,24 @@ namespace CustomChallengesMod
                         UnityEngine.Vector2 canvasSize = new UnityEngine.Vector2(canvas.rect.width * canvas.lossyScale.x, canvas.rect.height * canvas.lossyScale.y);
                         System.Text.StringBuilder display = new System.Text.StringBuilder();
                         System.Collections.Generic.Dictionary<SFS.Logs.Challenge, (int i, string progressData)> progress=null;
-                        System.Collections.Generic.HashSet<string> completeChallenges=null;
-
-    //~                     System.Collections.Generic.HashSet<SFS.Logs.Challenge> completeChallenges_Rocket=null;
+                        System.Collections.Generic.HashSet<string> completeChallenges_File=null;
+                        System.Collections.Generic.HashSet<SFS.Logs.Challenge> completeChallenges_Rocket=null;
+                        System.Collections.Generic.HashSet<string> completeChallenges_LogManager=null;
 
                         if (scene=="World_PC")
                         {
                             if (SFS.World.PlayerController.main.player.Value is SFS.World.Rocket rocket)
                             {
-    //~                             completeChallenges_Rocket= rocket.stats.challengeRecorder.GetCompleteChallenges();
+                                completeChallenges_Rocket= rocket.stats.challengeRecorder.GetCompleteChallenges();
 
                                 progress= (System.Collections.Generic.Dictionary<SFS.Logs.Challenge, (int i, string progressData)>)
                                     typeof(SFS.Stats.ChallengeRecorder)
                                         .GetField("progress", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                                         .GetValue(rocket.stats.challengeRecorder);
-
                             }
+
+                            if (SFS.Stats.LogManager.main!=null)
+                                completeChallenges_LogManager=SFS.Stats.LogManager.main.completeChallenges;
                         }
 
                         if
@@ -80,17 +82,17 @@ namespace CustomChallengesMod
                                     && SFS.Parsers.Json.JsonWrapper.TryLoadJson<System.Collections.Generic.List<string>>(filePath, out completeChallenges_List)
                                 )
                             {
-                                completeChallenges = completeChallenges_List.ToHashSet();
+                                completeChallenges_File = completeChallenges_List.ToHashSet();
                             }
                         }
 
-    //~                     display.AppendFormat("completeChallenges.Count={0:D}",completeChallenges.Count).AppendLine();
+    //~                     display.AppendFormat("completeChallenges_File.Count={0:D}",completeChallenges_File.Count).AppendLine();
     //~                     if (completeChallenges_Rocket!=null) display.AppendFormat("completeChallenges_Rocket.Count={0:D}",completeChallenges_Rocket.Count).AppendLine();
 
                         if (!_debug) _filter="InProgress";
                         if (progress==null && _filter=="InProgress") _filter="All";
-                        if (completeChallenges==null && _filter=="Complete") _filter="All";
-                        if (completeChallenges==null && _filter=="Incomplete") _filter="All";
+                        if (completeChallenges_File==null && _filter=="Complete") _filter="All";
+                        if (completeChallenges_File==null && _filter=="Incomplete") _filter="All";
 
                         System.Collections.Generic.List<SFS.Logs.Challenge> challenges = new System.Collections.Generic.List<SFS.Logs.Challenge> (SFS.Base.worldBase.challengesArray);
                         challenges.Sort((SFS.Logs.Challenge a, SFS.Logs.Challenge b) => a.id.CompareTo(b.id));
@@ -98,7 +100,9 @@ namespace CustomChallengesMod
                         foreach (SFS.Logs.Challenge oneChallenge in challenges)
                         {
                             bool isComplete=false;
-    //~                         bool isComplete_Rocket=false;
+                            bool isComplete_File=false;
+                            bool isComplete_Rocket=false;
+                            bool isComplete_LogManager=false;
                             int progressStepNo = 0;
                             string progressState = "";
 
@@ -109,20 +113,26 @@ namespace CustomChallengesMod
                                     progressStepNo=progress[oneChallenge].Item1+1;
                                     progressState=progress[oneChallenge].Item2;
                                 }
-                                if (completeChallenges!=null && completeChallenges.Contains(oneChallenge.id))
+                                if (completeChallenges_File!=null && completeChallenges_File.Contains(oneChallenge.id))
                                 {
                                     isComplete=true;
+                                    isComplete_File=true;
                                 }
-    //~                             if (completeChallenges_Rocket!=null && completeChallenges_Rocket.Contains(oneChallenge))
-    //~                             {
-    //~                                 isComplete_Rocket=true;
-    //~                             }
+                                if (completeChallenges_Rocket!=null && completeChallenges_Rocket.Contains(oneChallenge))
+                                {
+                                    isComplete_Rocket=true;
+                                }
+                                if (completeChallenges_LogManager!=null && completeChallenges_LogManager.Contains(oneChallenge.id))
+                                {
+                                    isComplete=true;
+                                    isComplete_LogManager=true;
+                                }
                             }
 
                             if
                                 (
                                     _filter=="All"
-                                    || (_filter=="InProgress" && !isComplete && progressStepNo!=0)
+                                    || (_filter=="InProgress" && !isComplete && (progressStepNo!=0 || isComplete_Rocket))
                                     || (_filter=="Complete" && isComplete)
                                     || (_filter=="Incomplete" && !isComplete)
                                 )
@@ -160,11 +170,36 @@ namespace CustomChallengesMod
                                     if (isComplete)
                                     {
                                         display.Append(", complete");
+
+                                        if (_debug)
+                                        {
+                                            System.Text.StringBuilder indicators = new System.Text.StringBuilder();
+
+                                            if (isComplete_File)
+                                            {
+                                                if (indicators.Length>0) indicators.Append(", ");
+                                                indicators.Append("file");
+                                            }
+
+                                            if (isComplete_Rocket)
+                                            {
+                                                if (indicators.Length>0) indicators.Append(", ");
+                                                indicators.Append("rocket");
+                                            }
+
+                                            if (isComplete_LogManager)
+                                            {
+                                                if (indicators.Length>0) indicators.Append(", ");
+                                                indicators.Append("log manager");
+                                            }
+
+                                            display.AppendFormat(" ({0})", indicators.ToString());
+                                        }
                                     }
-    //~                                 if (isComplete_Rocket)
-    //~                                 {
-    //~                                     display.Append(", complete (rocket)");
-    //~                                 }
+                                    else if (isComplete_Rocket)
+                                    {
+                                        display.Append(", awaiting recovery");
+                                    }
                                     display.Append(")");
 
                                     foreach (SFS.Logs.ChallengeStep oneStep in oneChallenge.steps)
@@ -175,7 +210,15 @@ namespace CustomChallengesMod
                                         {
                                             display.AppendFormat("... {0:D}: {1}", stepNo, oneOneOfStep.ToStringExt(progress:progressState));
 
-                                            if ((string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo) && (stepNo<=progressStepNo))
+                                            if
+                                                (
+                                                   isComplete_Rocket
+                                                   ||
+                                                   (
+                                                        (string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo)
+                                                        && stepNo<=progressStepNo
+                                                    )
+                                                )
                                             {
                                                 display.AppendLine();
                                                 display.Append("... (complete)");
@@ -185,7 +228,15 @@ namespace CustomChallengesMod
                                         {
                                             display.AppendFormat("... {0:D}: {1}", stepNo, oneAllOfStep.ToStringExt(progress:progressState));
 
-                                            if ((string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo) && (stepNo<=progressStepNo))
+                                            if
+                                                (
+                                                   isComplete_Rocket
+                                                   ||
+                                                   (
+                                                        (string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo)
+                                                        && stepNo<=progressStepNo
+                                                    )
+                                                )
                                             {
                                                 display.AppendLine();
                                                 display.Append("... (complete)");
@@ -195,7 +246,15 @@ namespace CustomChallengesMod
                                         {
                                             display.AppendFormat("... {0:D}: {1}", stepNo, oneAny_LandmarkStep.ToStringExt(progress:progressState));
 
-                                            if ((string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo) && (stepNo<=progressStepNo))
+                                            if
+                                                (
+                                                   isComplete_Rocket
+                                                   ||
+                                                   (
+                                                        (string.IsNullOrEmpty(progressState) || stepNo!=progressStepNo)
+                                                        && stepNo<=progressStepNo
+                                                    )
+                                                )
                                             {
                                                 display.Append(" (complete)");
                                             }
@@ -208,7 +267,7 @@ namespace CustomChallengesMod
                                             {
                                                 display.AppendFormat(" (progress \"{0}\")",progressState);
                                             }
-                                            else if (stepNo<=progressStepNo)
+                                            else if (isComplete_Rocket || stepNo<=progressStepNo)
                                             {
                                                 display.Append(" (complete)");
                                             }
